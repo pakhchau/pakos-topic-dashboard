@@ -419,15 +419,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             </div>
           </div>
           <div class="grid grid-cols-3 gap-3">
-            <div class="bg-gray-50 rounded-lg p-3 text-center">
+            <div class="bg-gray-700 rounded-lg p-3 text-center">
               <p class="text-2xl font-bold text-white" x-text="detail?.issues?.length || 0"></p>
               <p class="text-xs text-gray-500">Issues</p>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center">
+            <div class="bg-gray-700 rounded-lg p-3 text-center">
               <p class="text-2xl font-bold text-white" x-text="detail?.memory?.length || 0"></p>
               <p class="text-xs text-gray-500">Memory files</p>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3 text-center">
+            <div class="bg-gray-700 rounded-lg p-3 text-center">
               <p class="text-2xl font-bold text-white" x-text="detail?.skills?.length || 0"></p>
               <p class="text-xs text-gray-500">Skills</p>
             </div>
