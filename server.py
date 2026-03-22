@@ -513,27 +513,82 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         <!-- Tab: Overview -->
         <div x-show="activeTab === 'overview'" class="p-6">
+          <!-- Key Stats -->
           <div class="mb-6">
-            <div class="flex justify-between text-sm mb-2">
-              <span class="text-gray-600 font-medium">Progress</span>
-              <span class="font-bold text-blue-600" x-text="detail?.progress + '%'"></span>
-            </div>
-            <div class="bg-gray-100 rounded-full h-3">
-              <div class="progress-bar bg-blue-500 h-3 rounded-full" :style="'width:' + (detail?.progress || 0) + '%'"></div>
+            <h3 class="text-sm font-semibold text-gray-400 mb-4 uppercase">Key Stats</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-gray-700 rounded-lg p-4">
+                <p class="text-3xl font-bold text-blue-400" x-text="detail?.progress + '%'"></p>
+                <p class="text-xs text-gray-500 mt-1">Progress</p>
+                <div class="bg-gray-600 rounded-full h-2 mt-2">
+                  <div class="bg-blue-500 h-2 rounded-full" :style="'width:' + (detail?.progress || 0) + '%'"></div>
+                </div>
+              </div>
+              <div class="bg-gray-700 rounded-lg p-4">
+                <p class="text-3xl font-bold text-green-400" x-text="(detail?.issues || []).filter(i => i.done).length + '/' + (detail?.issues?.length || 0)"></p>
+                <p class="text-xs text-gray-500 mt-1">Issues Done</p>
+              </div>
             </div>
           </div>
-          <div class="grid grid-cols-3 gap-3">
-            <div class="bg-gray-700 rounded-lg p-3 text-center">
-              <p class="text-2xl font-bold text-white" x-text="detail?.issues?.length || 0"></p>
-              <p class="text-xs text-gray-500">Issues</p>
+
+          <!-- Metadata -->
+          <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gray-400 mb-3 uppercase">Timeline</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between items-start">
+                <span class="text-gray-400">Created:</span>
+                <span class="text-right text-gray-200" :title="new Date(selected.created_time * 1000).toISOString()" x-text="formatDatetime(selected.created_time)"></span>
+              </div>
+              <div class="flex justify-between items-start">
+                <span class="text-gray-400">Updated:</span>
+                <span class="text-right text-gray-200" :title="new Date(selected.updated_time * 1000).toISOString()" x-text="formatDatetime(selected.updated_time)"></span>
+              </div>
+              <div class="flex justify-between items-start">
+                <span class="text-gray-400">Last Activity:</span>
+                <span class="text-right text-gray-200" :title="new Date(selected.last_message_time * 1000).toISOString()" x-text="formatLastActivity(selected.last_message_time)"></span>
+              </div>
             </div>
-            <div class="bg-gray-700 rounded-lg p-3 text-center">
-              <p class="text-2xl font-bold text-white" x-text="detail?.memory?.length || 0"></p>
-              <p class="text-xs text-gray-500">Memory files</p>
+          </div>
+
+          <!-- Content Stats -->
+          <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gray-400 mb-3 uppercase">Content</h3>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="bg-gray-700 rounded-lg p-3 text-center hover:bg-gray-600 transition cursor-pointer" @click="activeTab = 'issues'">
+                <p class="text-2xl font-bold text-blue-400" x-text="detail?.issues?.length || 0"></p>
+                <p class="text-xs text-gray-500">Issues</p>
+              </div>
+              <div class="bg-gray-700 rounded-lg p-3 text-center hover:bg-gray-600 transition cursor-pointer" @click="activeTab = 'memory'">
+                <p class="text-2xl font-bold text-purple-400" x-text="detail?.memory?.length || 0"></p>
+                <p class="text-xs text-gray-500">Memory</p>
+              </div>
+              <div class="bg-gray-700 rounded-lg p-3 text-center hover:bg-gray-600 transition cursor-pointer" @click="activeTab = 'chat'">
+                <p class="text-2xl font-bold text-green-400" x-text="detail?.transcript?.length || 0"></p>
+                <p class="text-xs text-gray-500">Messages</p>
+              </div>
+              <div class="bg-gray-700 rounded-lg p-3 text-center hover:bg-gray-600 transition cursor-pointer" @click="activeTab = 'skills'">
+                <p class="text-2xl font-bold text-yellow-400" x-text="detail?.skills?.length || 0"></p>
+                <p class="text-xs text-gray-500">Skills</p>
+              </div>
+              <div class="bg-gray-700 rounded-lg p-3 text-center hover:bg-gray-600 transition cursor-pointer" @click="activeTab = 'files'">
+                <p class="text-2xl font-bold text-orange-400" x-text="detail?.files?.length || 0"></p>
+                <p class="text-xs text-gray-500">Files</p>
+              </div>
+              <div class="bg-gray-700 rounded-lg p-3 text-center hover:bg-gray-600 transition cursor-pointer" @click="activeTab = 'crons'">
+                <p class="text-2xl font-bold text-pink-400" x-text="detail?.crons?.length || 0"></p>
+                <p class="text-xs text-gray-500">Crons</p>
+              </div>
             </div>
-            <div class="bg-gray-700 rounded-lg p-3 text-center">
-              <p class="text-2xl font-bold text-white" x-text="detail?.skills?.length || 0"></p>
-              <p class="text-xs text-gray-500">Skills</p>
+          </div>
+
+          <!-- Status Badges -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-400 mb-3 uppercase">Status</h3>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 bg-blue-900 text-blue-200 text-xs rounded-full">Status: <span x-text="selected.status"></span></span>
+              <span class="px-3 py-1 bg-purple-900 text-purple-200 text-xs rounded-full">Heartbeat: <span x-text="selected.heartbeat"></span></span>
+              <span x-show="selected.has_issues" class="px-3 py-1 bg-green-900 text-green-200 text-xs rounded-full">📋 Has Issues</span>
+              <span x-show="selected.has_memory" class="px-3 py-1 bg-indigo-900 text-indigo-200 text-xs rounded-full">🧠 Has Memory</span>
             </div>
           </div>
         </div>
