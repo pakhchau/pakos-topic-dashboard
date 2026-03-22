@@ -764,68 +764,73 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Tab: Chat (Interactive + Streaming) -->
+        <!-- Tab: Chat (Reverse Chronological) -->
         <div x-show="activeTab === 'chat'" class="p-6 flex flex-col h-full">
-          <!-- Chat history -->
-          <div class="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+          <!-- Info banner -->
+          <div class="mb-4 p-3 bg-blue-900 bg-opacity-30 border border-blue-700 rounded text-xs text-blue-200">
+            <p>💬 Latest messages appear at the top. Scroll down for conversation history.</p>
+          </div>
+
+          <!-- Input area at top (reverse of typical) -->
+          <div class="border-b border-gray-700 pb-4 mb-4">
+            <div class="flex gap-2">
+              <textarea x-model="chatInput"
+                @keydown.enter.shift="sendChatMessage()"
+                class="flex-1 p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none text-sm"
+                rows="2"
+                placeholder="Type your message here... (Shift+Enter to send)"></textarea>
+              <button @click="sendChatMessage()" :disabled="!chatInput.trim() || chatStreaming"
+                :class="!chatInput.trim() || chatStreaming ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'"
+                class="px-4 py-3 bg-blue-600 text-white rounded-lg font-medium transition flex-shrink-0">
+                📤 Send
+              </button>
+            </div>
+          </div>
+
+          <!-- Chat history (reverse chronological) -->
+          <div class="flex-1 overflow-y-auto space-y-3 pr-2">
             <!-- Empty state -->
             <div x-show="!detail?.transcript?.length" class="text-center py-12 flex flex-col items-center justify-center">
               <p class="text-5xl mb-3">💬</p>
               <p class="text-gray-400 text-sm">No messages yet. Start a conversation!</p>
             </div>
 
-            <!-- Messages -->
-            <template x-for="(msg, i) in (detail?.transcript || [])" :key="i">
+            <!-- Messages in reverse order (latest first) -->
+            <template x-for="(msg, i) in [...(detail?.transcript || [])].reverse()" :key="i">
               <div :class="msg.role === 'user' ? 'justify-end' : 'justify-start'" class="flex">
-                <div :class="msg.role === 'user' ? 'bg-blue-600 text-white rounded-l-lg rounded-tr-lg' : 'bg-gray-700 text-gray-100 rounded-r-lg rounded-tl-lg'"
-                  class="max-w-xs lg:max-w-md px-4 py-3 rounded-lg">
-                  <!-- Role badge -->
-                  <p class="text-xs font-semibold uppercase mb-1 opacity-60" x-text="msg.role === 'user' ? '👤 You' : '🤖 Agent'"></p>
+                <div :class="msg.role === 'user' ? 'bg-blue-600 text-white rounded-l-xl rounded-tr-xl' : 'bg-gray-700 text-gray-100 rounded-r-xl rounded-tl-xl'"
+                  class="max-w-sm lg:max-w-md px-4 py-3">
+                  
                   <!-- Message content -->
                   <div class="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                    <template x-if="msg.artifact">
-                      <!-- Artifact preview -->
-                      <div class="mt-2 p-3 bg-gray-600 rounded border border-gray-500 max-h-32 overflow-hidden">
-                        <p class="text-xs text-gray-300 mb-1"><strong>📦 Artifact:</strong> <span x-text="msg.artifact.type"></span></p>
-                        <pre class="text-xs text-gray-300 overflow-x-auto"><code x-text="msg.artifact.content.substring(0, 200) + (msg.artifact.content.length > 200 ? '...' : '')"></code></pre>
-                      </div>
-                    </template>
                     <p x-text="msg.text"></p>
                   </div>
+                  
+                  <!-- Artifacts -->
+                  <template x-if="msg.artifact">
+                    <div class="mt-3 p-3 bg-gray-600 bg-opacity-50 rounded border border-gray-500 max-h-40 overflow-y-auto">
+                      <p class="text-xs font-semibold text-gray-200 mb-2">📦 <span x-text="msg.artifact.type"></span></p>
+                      <pre class="text-xs text-gray-300 overflow-x-auto font-mono"><code x-text="msg.artifact.content.substring(0, 300) + (msg.artifact.content.length > 300 ? '...' : '')"></code></pre>
+                    </div>
+                  </template>
+                  
                   <!-- Timestamp -->
-                  <p class="text-xs opacity-60 mt-2" x-text="msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : ''"></p>
+                  <p class="text-xs mt-2 opacity-50" x-text="msg.timestamp ? new Date(msg.timestamp).toLocaleString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : ''"></p>
                 </div>
               </div>
             </template>
 
-            <!-- Streaming indicator -->
+            <!-- Streaming indicator (newest) -->
             <div x-show="chatStreaming" class="flex justify-start">
-              <div class="bg-gray-700 text-gray-100 rounded-r-lg rounded-tl-lg px-4 py-3">
-                <p class="text-xs font-semibold uppercase mb-2 opacity-60">🤖 Agent (streaming...)</p>
-                <div class="space-y-1">
-                  <div class="h-2 bg-gray-600 rounded animate-pulse w-48"></div>
-                  <div class="h-2 bg-gray-600 rounded animate-pulse w-40"></div>
-                  <div class="h-2 bg-gray-600 rounded animate-pulse w-44"></div>
+              <div class="bg-gray-700 text-gray-100 rounded-r-xl rounded-tl-xl px-4 py-3">
+                <p class="text-xs font-semibold uppercase mb-2 opacity-60">🤖 Agent (typing...)</p>
+                <div class="flex gap-1">
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Input area -->
-          <div class="border-t border-gray-700 pt-4">
-            <div class="flex gap-2">
-              <textarea x-model="chatInput"
-                @keydown.enter.shift="sendChatMessage()"
-                class="flex-1 p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none text-sm"
-                rows="2"
-                placeholder="Message the agent... (Shift+Enter to send)"></textarea>
-              <button @click="sendChatMessage()" :disabled="!chatInput.trim() || chatStreaming"
-                :class="!chatInput.trim() || chatStreaming ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'"
-                class="px-4 py-3 bg-blue-600 text-white rounded-lg font-medium transition flex-shrink-0">
-                Send
-              </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">⌘+Enter to send (or click Send)</p>
           </div>
         </div>
 
