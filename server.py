@@ -205,6 +205,9 @@ def list_topics():
     enriched = []
     for t in topics:
         d = get_topic_dir(t["id"])
+        # Skip topics without workspace folders or valid names
+        if not d or not t["name"].strip():
+            continue
         t["progress"] = compute_progress(d) if d else 0
         t["has_issues"] = bool(d and (d / "ISSUES.md").exists())
         t["has_memory"] = bool(d and (d / "memory").exists())
