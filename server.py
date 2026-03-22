@@ -734,18 +734,68 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Tab: Chat -->
-        <div x-show="activeTab === 'chat'" class="p-6">
-          <h3 class="font-semibold text-white mb-4">Chat Transcript</h3>
-          <div x-show="!detail?.transcript?.length" class="text-sm text-gray-400 text-center py-8">No transcript available</div>
-          <div class="space-y-2 max-h-[60vh] overflow-y-auto scrollbar-thin">
+        <!-- Tab: Chat (Interactive + Streaming) -->
+        <div x-show="activeTab === 'chat'" class="p-6 flex flex-col h-full">
+          <!-- Chat history -->
+          <div class="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+            <!-- Empty state -->
+            <div x-show="!detail?.transcript?.length" class="text-center py-12 flex flex-col items-center justify-center">
+              <p class="text-5xl mb-3">💬</p>
+              <p class="text-gray-400 text-sm">No messages yet. Start a conversation!</p>
+            </div>
+
+            <!-- Messages -->
             <template x-for="(msg, i) in (detail?.transcript || [])" :key="i">
-              <div :class="msg.role === 'user' ? 'transcript-user' : 'transcript-assistant'"
-                class="p-3 rounded-r-lg text-sm">
-                <p class="text-xs font-semibold uppercase mb-1 opacity-50" x-text="msg.role"></p>
-                <p class="text-gray-800 text-xs leading-relaxed whitespace-pre-wrap" x-text="msg.text"></p>
+              <div :class="msg.role === 'user' ? 'justify-end' : 'justify-start'" class="flex">
+                <div :class="msg.role === 'user' ? 'bg-blue-600 text-white rounded-l-lg rounded-tr-lg' : 'bg-gray-700 text-gray-100 rounded-r-lg rounded-tl-lg'"
+                  class="max-w-xs lg:max-w-md px-4 py-3 rounded-lg">
+                  <!-- Role badge -->
+                  <p class="text-xs font-semibold uppercase mb-1 opacity-60" x-text="msg.role === 'user' ? '👤 You' : '🤖 Agent'"></p>
+                  <!-- Message content -->
+                  <div class="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                    <template x-if="msg.artifact">
+                      <!-- Artifact preview -->
+                      <div class="mt-2 p-3 bg-gray-600 rounded border border-gray-500 max-h-32 overflow-hidden">
+                        <p class="text-xs text-gray-300 mb-1"><strong>📦 Artifact:</strong> <span x-text="msg.artifact.type"></span></p>
+                        <pre class="text-xs text-gray-300 overflow-x-auto"><code x-text="msg.artifact.content.substring(0, 200) + (msg.artifact.content.length > 200 ? '...' : '')"></code></pre>
+                      </div>
+                    </template>
+                    <p x-text="msg.text"></p>
+                  </div>
+                  <!-- Timestamp -->
+                  <p class="text-xs opacity-60 mt-2" x-text="msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : ''"></p>
+                </div>
               </div>
             </template>
+
+            <!-- Streaming indicator -->
+            <div x-show="chatStreaming" class="flex justify-start">
+              <div class="bg-gray-700 text-gray-100 rounded-r-lg rounded-tl-lg px-4 py-3">
+                <p class="text-xs font-semibold uppercase mb-2 opacity-60">🤖 Agent (streaming...)</p>
+                <div class="space-y-1">
+                  <div class="h-2 bg-gray-600 rounded animate-pulse w-48"></div>
+                  <div class="h-2 bg-gray-600 rounded animate-pulse w-40"></div>
+                  <div class="h-2 bg-gray-600 rounded animate-pulse w-44"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input area -->
+          <div class="border-t border-gray-700 pt-4">
+            <div class="flex gap-2">
+              <textarea x-model="chatInput"
+                @keydown.enter.shift="sendChatMessage()"
+                class="flex-1 p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none text-sm"
+                rows="2"
+                placeholder="Message the agent... (Shift+Enter to send)"></textarea>
+              <button @click="sendChatMessage()" :disabled="!chatInput.trim() || chatStreaming"
+                :class="!chatInput.trim() || chatStreaming ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'"
+                class="px-4 py-3 bg-blue-600 text-white rounded-lg font-medium transition flex-shrink-0">
+                Send
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">⌘+Enter to send (or click Send)</p>
           </div>
         </div>
 
@@ -800,6 +850,7 @@ function dashboard() {
     view: 'card', search: '', selected: null, detail: null,
     activeTab: 'overview', detailLoading: false,
     issueFilter: 'all', editingIssue: null,
+    chatInput: '', chatStreaming: false,
 
     async init() {
       await this.refresh();
@@ -893,6 +944,37 @@ function dashboard() {
         body: JSON.stringify({ issues: this.detail.issues })
       });
       alert('Saved ✓');
+    },
+
+    async sendChatMessage() {
+      if (!this.chatInput.trim() || this.chatStreaming) return;
+      
+      const message = this.chatInput;
+      this.chatInput = '';
+      this.chatStreaming = true;
+      
+      try {
+        // Add user message to transcript
+        if (!this.detail.transcript) this.detail.transcript = [];
+        this.detail.transcript.push({
+          role: 'user',
+          text: message,
+          timestamp: new Date().toISOString()
+        });
+        
+        // TODO: Send to agent via Telegram or API
+        // For now, just add a placeholder agent response
+        setTimeout(() => {
+          this.detail.transcript.push({
+            role: 'assistant',
+            text: '(Agent will respond here)',
+            timestamp: new Date().toISOString()
+          });
+          this.chatStreaming = false;
+        }, 500);
+      } finally {
+        this.chatStreaming = false;
+      }
     },
 
     tabIcon(tab) {
