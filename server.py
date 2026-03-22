@@ -596,7 +596,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
 
           <!-- Status Badges -->
-          <div>
+          <div class="mb-4">
             <h3 class="text-sm font-semibold text-gray-400 mb-3 uppercase">Status</h3>
             <div class="flex flex-wrap gap-2">
               <span class="px-3 py-1 bg-blue-900 text-blue-200 text-xs rounded-full">Status: <span x-text="selected.status"></span></span>
@@ -604,6 +604,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
               <span x-show="selected.has_issues" class="px-3 py-1 bg-green-900 text-green-200 text-xs rounded-full">📋 Has Issues</span>
               <span x-show="selected.has_memory" class="px-3 py-1 bg-indigo-900 text-indigo-200 text-xs rounded-full">🧠 Has Memory</span>
             </div>
+          </div>
+
+          <!-- Nudge Agent Button (for topics without issues) -->
+          <div x-show="!selected.has_issues">
+            <button @click="nudgeAgent(selected)" 
+              class="w-full py-3 px-4 bg-yellow-600 text-white text-sm font-bold rounded-lg hover:bg-yellow-700 transition">
+              👋 Nudge Agent: Create Issue List
+            </button>
+            <p class="text-xs text-gray-500 mt-2">This will send a message asking the agent to bootstrap their ISSUES.md with your approval.</p>
           </div>
         </div>
 
@@ -988,6 +997,48 @@ function dashboard() {
         }, 500);
       } finally {
         this.chatStreaming = false;
+      }
+    },
+
+    async nudgeAgent(topic) {
+      const message = `Hi! 👋
+
+I'm noticing you don't have an ISSUES.md file yet. Let's create one together!
+
+**Here's what I need:**
+1. Look at your SOUL.md mission brief
+2. Break it down into 3-5 concrete, actionable tasks
+3. Draft an ISSUES.md with those tasks
+4. Show me the list and ask if I approve before you start
+
+**Use the Bootstrap Issues skill** (/root/clawd/skills/bootstrap-issues/) for guidance.
+
+This is how we'll track progress. Once you have the list, I can oversee everything from the dashboard.
+
+Ready? Let me know what you come up with! 💪`;
+
+      try {
+        // Send nudge via Telegram to the topic
+        const response = await fetch('/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'send',
+            channel: 'telegram',
+            target: '-1003736525734',
+            threadId: topic.topic_id,
+            message: message
+          })
+        });
+        
+        if (response.ok) {
+          alert('✅ Nudge sent! Agent will see it in their Telegram topic.');
+        } else {
+          alert('❌ Failed to send nudge. Try manually.');
+        }
+      } catch (e) {
+        console.error('Nudge error:', e);
+        alert('Error sending nudge: ' + e.message);
       }
     },
 
