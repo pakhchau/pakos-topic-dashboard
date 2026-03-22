@@ -338,6 +338,11 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   [x-cloak] { display: none !important; }
   .scrollbar-thin::-webkit-scrollbar { width: 4px; }
   .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+  
+  .markdown-content strong { font-weight: 600; color: #fff; }
+  .markdown-content em { font-style: italic; }
+  .markdown-content code { background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+  .markdown-content a { color: #60a5fa; text-decoration: underline; }
   .transcript-user { background: #eff6ff; border-left: 3px solid #3b82f6; }
   .transcript-assistant { background: #f0fdf4; border-left: 3px solid #22c55e; }
   .progress-bar { transition: width 0.4s ease; }
@@ -764,73 +769,38 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Tab: Chat (Reverse Chronological) -->
-        <div x-show="activeTab === 'chat'" class="p-6 flex flex-col h-full">
-          <!-- Info banner -->
-          <div class="mb-4 p-3 bg-blue-900 bg-opacity-30 border border-blue-700 rounded text-xs text-blue-200">
-            <p>💬 Latest messages appear at the top. Scroll down for conversation history.</p>
+        <!-- Tab: Chat (Transcript, Read-Only) -->
+        <div x-show="activeTab === 'chat'" class="p-4 flex flex-col h-full">
+          <!-- Empty state -->
+          <div x-show="!detail?.transcript?.length" class="text-center py-12 flex flex-col items-center justify-center flex-1">
+            <p class="text-5xl mb-3">💬</p>
+            <p class="text-gray-400 text-sm">No messages yet</p>
           </div>
 
-          <!-- Input area at top (reverse of typical) -->
-          <div class="border-b border-gray-700 pb-4 mb-4">
-            <div class="flex gap-2">
-              <textarea x-model="chatInput"
-                @keydown.enter.shift="sendChatMessage()"
-                class="flex-1 p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none text-sm"
-                rows="2"
-                placeholder="Type your message here... (Shift+Enter to send)"></textarea>
-              <button @click="sendChatMessage()" :disabled="!chatInput.trim() || chatStreaming"
-                :class="!chatInput.trim() || chatStreaming ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'"
-                class="px-4 py-3 bg-blue-600 text-white rounded-lg font-medium transition flex-shrink-0">
-                📤 Send
-              </button>
-            </div>
-          </div>
-
-          <!-- Chat history (reverse chronological) -->
-          <div class="flex-1 overflow-y-auto space-y-3 pr-2">
-            <!-- Empty state -->
-            <div x-show="!detail?.transcript?.length" class="text-center py-12 flex flex-col items-center justify-center">
-              <p class="text-5xl mb-3">💬</p>
-              <p class="text-gray-400 text-sm">No messages yet. Start a conversation!</p>
-            </div>
-
+          <!-- Chat history (reverse chronological, compact) -->
+          <div class="flex-1 overflow-y-auto space-y-2 pr-2">
             <!-- Messages in reverse order (latest first) -->
             <template x-for="(msg, i) in [...(detail?.transcript || [])].reverse()" :key="i">
-              <div :class="msg.role === 'user' ? 'justify-end' : 'justify-start'" class="flex">
-                <div :class="msg.role === 'user' ? 'bg-blue-600 text-white rounded-l-xl rounded-tr-xl' : 'bg-gray-700 text-gray-100 rounded-r-xl rounded-tl-xl'"
-                  class="max-w-sm lg:max-w-md px-4 py-3">
+              <div :class="msg.role === 'user' ? 'justify-end' : 'justify-start'" class="flex gap-2">
+                <!-- Agent indicator (left) -->
+                <div x-show="msg.role === 'assistant'" class="text-xs text-gray-500 mt-1 w-8 text-center">🤖</div>
+                
+                <!-- Message bubble -->
+                <div :class="msg.role === 'user' ? 'bg-blue-700 text-white rounded-lg rounded-tr-none' : 'bg-gray-700 text-gray-100 rounded-lg rounded-tl-none'"
+                  class="max-w-2xl px-3 py-2">
                   
-                  <!-- Message content -->
-                  <div class="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                    <p x-text="msg.text"></p>
-                  </div>
+                  <!-- Message content (with markdown support) -->
+                  <div class="text-sm leading-relaxed whitespace-pre-wrap break-words markdown-content"
+                    x-html="formatMessageText(msg.text)"></div>
                   
-                  <!-- Artifacts -->
-                  <template x-if="msg.artifact">
-                    <div class="mt-3 p-3 bg-gray-600 bg-opacity-50 rounded border border-gray-500 max-h-40 overflow-y-auto">
-                      <p class="text-xs font-semibold text-gray-200 mb-2">📦 <span x-text="msg.artifact.type"></span></p>
-                      <pre class="text-xs text-gray-300 overflow-x-auto font-mono"><code x-text="msg.artifact.content.substring(0, 300) + (msg.artifact.content.length > 300 ? '...' : '')"></code></pre>
-                    </div>
-                  </template>
-                  
-                  <!-- Timestamp -->
-                  <p class="text-xs mt-2 opacity-50" x-text="msg.timestamp ? new Date(msg.timestamp).toLocaleString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : ''"></p>
+                  <!-- Timestamp (compact) -->
+                  <p class="text-xs mt-1 opacity-50" x-text="msg.timestamp ? new Date(msg.timestamp).toLocaleString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : ''"></p>
                 </div>
+
+                <!-- User indicator (right) -->
+                <div x-show="msg.role === 'user'" class="text-xs text-gray-500 mt-1 w-8 text-center">👤</div>
               </div>
             </template>
-
-            <!-- Streaming indicator (newest) -->
-            <div x-show="chatStreaming" class="flex justify-start">
-              <div class="bg-gray-700 text-gray-100 rounded-r-xl rounded-tl-xl px-4 py-3">
-                <p class="text-xs font-semibold uppercase mb-2 opacity-60">🤖 Agent (typing...)</p>
-                <div class="flex gap-1">
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
-                  <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -1052,6 +1022,23 @@ Ready? Let me know what you come up with! 💪`;
         console.error('Nudge error:', e);
         alert('Error sending nudge: ' + e.message);
       }
+    },
+
+    formatMessageText(text) {
+      if (!text) return '';
+      // Convert markdown to HTML
+      let html = text;
+      // Bold: **text** → <strong>text</strong>
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      // Italic: *text* → <em>text</em>
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      // Code: `text` → <code>text</code>
+      html = html.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 0.9em;">$1</code>');
+      // Links: [text](url) → <a href="url">text</a>
+      html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color: #60a5fa; text-decoration: underline;" target="_blank">$1</a>');
+      // Line breaks
+      html = html.replace(/\n/g, '<br>');
+      return html;
     },
 
     tabIcon(tab) {
