@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Documentation — PakOS</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #22222e;
+    --accent: #6c63ff;
+    --green: #00d4a0;
+    --text: #e8e8f0;
+    --muted: #666680;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex; align-items: center;
+  }
+  .brand { display: flex; gap: 10px; }
+  .brand-name { font-weight: 700; }
+
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+  }
+
+  nav {
+    height: fit-content;
+    position: sticky; top: 80px;
+  }
+
+  nav button {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+
+  nav button:hover {
+    background: var(--card);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  nav button.active {
+    background: var(--card);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .content {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+  }
+
+  .content h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: var(--accent);
+  }
+
+  .content h2 {
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .content h3 {
+    font-size: 15px;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .content p, .content li {
+    margin-bottom: 10px;
+    color: var(--muted);
+  }
+
+  .content ul, .content ol {
+    margin-left: 20px;
+    margin-bottom: 14px;
+  }
+
+  .content code {
+    background: var(--bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Monaco', monospace;
+    color: var(--green);
+  }
+
+  .content pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    overflow-x: auto;
+    margin: 12px 0;
+    font-size: 12px;
+  }
+
+  .content table {
+    width: 100%;
+    margin: 12px 0;
+    border-collapse: collapse;
+  }
+
+  .content table th {
+    background: var(--bg);
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    color: var(--accent);
+    font-size: 12px;
+  }
+
+  .content table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .status-ok { background: rgba(0,212,160,0.2); color: var(--green); }
+  .status-warn { background: rgba(245,166,35,0.2); color: #f5a623; }
+
+  section { display: none; }
+  section.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span style="font-size: 20px;">📖</span>
+    <div class="brand-name">Dashboard Documentation</div>
+  </div>
+</header>
+
+<main>
+  <nav>
+    <button onclick="showSection('overview')" class="nav-btn active">Overview</button>
+    <button onclick="showSection('api')" class="nav-btn">API Reference</button>
+    <button onclick="showSection('views')" class="nav-btn">Views</button>
+    <button onclick="showSection('data')" class="nav-btn">Data Sources</button>
+    <button onclick="showSection('deployment')" class="nav-btn">Deployment</button>
+    <button onclick="showSection('faq')" class="nav-btn">FAQ</button>
+  </nav>
+
+  <div class="content">
+    <!-- OVERVIEW -->
+    <section id="overview" class="active">
+      <h1>📊 PakOS Topic Dashboard</h1>
+      <p>Visual management interface for all Telegram topics in PakOS ecosystem.</p>
+
+      <h2>What is it?</h2>
+      <p>A real-time dashboard that gives you a bird's-eye view of all active topics with:</p>
+      <ul>
+        <li><strong>Multiple views:</strong> Card, List, Kanban layouts</li>
+        <li><strong>Topic details:</strong> Issues, memory, transcripts, skills, files</li>
+        <li><strong>Health monitoring:</strong> System metrics, service status</li>
+        <li><strong>Issue tracking:</strong> Edit and manage issues per topic</li>
+      </ul>
+
+      <h2>Key Features</h2>
+      <ul>
+        <li><strong>Card View:</strong> Topics as cards with progress, status, metadata</li>
+        <li><strong>List View:</strong> Sortable table format with quick scan</li>
+        <li><strong>Kanban View:</strong> Topics organized by workflow status</li>
+        <li><strong>Search:</strong> Filter topics by name in real-time</li>
+        <li><strong>Detailed View:</strong> Deep dive into individual topic data</li>
+      </ul>
+
+      <h2>Getting Started</h2>
+      <p>Use the navigation sidebar to explore:</p>
+      <ul>
+        <li><strong>API Reference:</strong> REST endpoints and data formats</li>
+        <li><strong>Views:</strong> How each view works and what it shows</li>
+        <li><strong>Data Sources:</strong> Where information comes from</li>
+        <li><strong>FAQ:</strong> Common questions and troubleshooting</li>
+      </ul>
+    </section>
+
+    <!-- API REFERENCE -->
+    <section id="api">
+      <h1>🔌 API Reference</h1>
+      <p>All endpoints are prefixed with <code>/api</code> and return JSON.</p>
+
+      <h2>Topics</h2>
+
+      <h3>GET /api/topics</h3>
+      <p>List all active topics with summary data.</p>
+      <pre>$ curl https://agents.pakhchau.com/api/topics
+
+[
+  {
+    "id": "topic-24768",
+    "name": "🗂️ Topic Dashboard",
+    "topic_id": "24768",
+    "status": "active",
+    "heartbeat": "30m",
+    "progress": 0,
+    "has_issues": true,
+    "has_memory": true
+  },
+  ...
+]</pre>
+
+      <h3>GET /api/topics/{id}</h3>
+      <p>Get detailed information about a specific topic.</p>
+      <pre>$ curl https://agents.pakhchau.com/api/topics/topic-24768
+
+{
+  "id": "topic-24768",
+  "name": "🗂️ Topic Dashboard",
+  "overview": "...",
+  "issues": [...],
+  "memory": [...],
+  "chat": [...],
+  "skills": [...],
+  "files": [...]
+}</pre>
+
+      <h3>PUT /api/topics/{id}/issues</h3>
+      <p>Update issues for a topic.</p>
+      <pre>$ curl -X PUT https://agents.pakhchau.com/api/topics/topic-24768/issues \
+  -H "Content-Type: application/json" \
+  -d '{"issues": [{"title": "...", "done": false}]}'</pre>
+
+      <h2>Health</h2>
+
+      <h3>GET /api/health</h3>
+      <p>System health status and metrics.</p>
+      <pre>$ curl https://agents.pakhchau.com/api/health</pre>
+    </section>
+
+    <!-- VIEWS -->
+    <section id="views">
+      <h1>🎨 Dashboard Views</h1>
+
+      <h2>Card View</h2>
+      <p>Topics displayed as cards in a grid. Best for quick overview.</p>
+      <ul>
+        <li>Shows: name, status, progress bar, heartbeat, icons</li>
+        <li>Click card to see details</li>
+        <li>Hover for subtle animations</li>
+      </ul>
+
+      <h2>List View</h2>
+      <p>Compact table format. Best for scanning many topics.</p>
+      <ul>
+        <li>Columns: Topic, Status, Progress, Heartbeat, ID</li>
+        <li>Sortable by column (click header)</li>
+        <li>Quick status badges</li>
+      </ul>
+
+      <h2>Kanban View</h2>
+      <p>Topics organized by workflow status. Best for project tracking.</p>
+      <ul>
+        <li>Columns: Active, Paused, Dormant, Completed</li>
+        <li>Drag to move between statuses (coming soon)</li>
+        <li>Count indicators per column</li>
+      </ul>
+
+      <h2>Detail View</h2>
+      <p>Click any topic to open detailed view with tabs:</p>
+      <ul>
+        <li><strong>Overview (📊):</strong> Description, metadata, stats</li>
+        <li><strong>Issues (📋):</strong> Open/done issues, add/edit</li>
+        <li><strong>Memory (🧠):</strong> Session notes and context</li>
+        <li><strong>Chat (💬):</strong> Message transcript</li>
+        <li><strong>Skills (⚡):</strong> Available capabilities</li>
+        <li><strong>Files (📁):</strong> Outputs and artifacts</li>
+        <li><strong>Crons (⏰):</strong> Scheduled tasks and heartbeats</li>
+      </ul>
+    </section>
+
+    <!-- DATA SOURCES -->
+    <section id="data">
+      <h1>📊 Data Sources</h1>
+
+      <h2>Where Information Comes From</h2>
+
+      <h3>Topic Metadata</h3>
+      <p>From <code>/root/clawd/topics/</code> workspace directories:</p>
+      <ul>
+        <li><code>SOUL.md</code> — Topic name, role, mission</li>
+        <li><code>ISSUES.md</code> — Issue list (editable)</li>
+        <li><code>HEARTBEAT.md</code> — Heartbeat schedule</li>
+        <li><code>SKILLS.md</code> — Available capabilities</li>
+      </ul>
+
+      <h3>Memory</h3>
+      <p>From <code>/root/clawd/topics/*/memory/</code>:</p>
+      <ul>
+        <li>Daily session notes (<code>YYYY-MM-DD.md</code>)</li>
+        <li>Long-term memory (<code>MEMORY.md</code>)</li>
+      </ul>
+
+      <h3>Chat Transcripts</h3>
+      <p>From <code>/root/.openclaw/agents/*/sessions/*.jsonl</code>:</p>
+      <ul>
+        <li>Session messages with timestamps</li>
+        <li>User and assistant responses</li>
+        <li>Searchable and filterable</li>
+      </ul>
+
+      <h3>System Health</h3>
+      <p>From system diagnostics:</p>
+      <ul>
+        <li>Disk usage, memory, CPU</li>
+        <li>Service status</li>
+        <li>Open issues count</li>
+      </ul>
+    </section>
+
+    <!-- DEPLOYMENT -->
+    <section id="deployment">
+      <h1>🚀 Deployment</h1>
+
+      <h2>Production Setup</h2>
+      <p>This dashboard is hosted at <code>agents.pakhchau.com</code> and served by:</p>
+      <ul>
+        <li><strong>Backend:</strong> <code>/root/clawd/pakos-dashboard/server.py</code></li>
+        <li><strong>Port:</strong> 8935 (proxied via nginx)</li>
+        <li><strong>Frontend:</strong> Static HTML/CSS/JS</li>
+      </ul>
+
+      <h2>Updating the Dashboard</h2>
+      <p>Edit files in <code>/root/clawd/pakos-dashboard/</code>:</p>
+      <pre>$ cd /root/clawd/pakos-dashboard/
+$ # Edit index.html, server.py, etc.
+$ # Restart service
+$ systemctl restart pakos-dashboard</pre>
+
+      <h2>Adding New Pages</h2>
+      <p>Create new HTML files and wire them in <code>server.py</code>:</p>
+      <pre>if path == '/docs':
+    return serve_file('docs.html')
+elif path == '/test':
+    return serve_file('test.html')
+elif path == '/newpage':
+    return serve_file('newpage.html')</pre>
+
+      <h2>API Endpoints</h2>
+      <p>Add new routes in <code>server.py</code> request handler.</p>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq">
+      <h1>❓ FAQ</h1>
+
+      <h2>How do I add a topic?</h2>
+      <p>Topics are discovered automatically from <code>/root/clawd/topics/</code> folders. Create a new folder with <code>SOUL.md</code> and it will appear in the dashboard.</p>
+
+      <h2>Can I edit issues?</h2>
+      <p>Yes! Click a topic to open the detail view, go to the Issues tab, and use the edit buttons to add, modify, or remove issues.</p>
+
+      <h2>Where does the memory data come from?</h2>
+      <p>From <code>memory/*.md</code> files in each topic's workspace, plus <code>MEMORY.md</code> for long-term context.</p>
+
+      <h2>How often does data refresh?</h2>
+      <p>Data is fetched on page load and when you click "Refresh". Real-time updates coming soon.</p>
+
+      <h2>What if a topic doesn't show data?</h2>
+      <p>Make sure the topic folder exists at <code>/root/clawd/topics/topic-XXXX/</code> and has appropriate files (<code>SOUL.md</code>, <code>ISSUES.md</code>, etc.).</p>
+
+      <h2>Can I search topics?</h2>
+      <p>Yes! Use the search box at the top of the dashboard. It filters by topic name in real-time.</p>
+
+      <h2>How do I change the view?</h2>
+      <p>Click "Cards", "List", or "Kanban" buttons at the top right of the dashboard.</p>
+
+      <h2>What's the Heartbeat column?</h2>
+      <p>Shows how often the topic checks for new messages. Examples: "30m" (every 30 minutes), "1h" (hourly), "off" (disabled).</p>
+
+      <h2>How do I see chat transcripts?</h2>
+      <p>Open a topic detail view and click the "Chat" tab to see message history.</p>
+
+      <h2>Can I export data?</h2>
+      <p>Not yet, but it's planned. All data is readable via the <code>/api</code> endpoints.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`button[onclick="showSection('${id}')"]`).classList.add('active');
+}
+</script>
+
+</body>
+</html>

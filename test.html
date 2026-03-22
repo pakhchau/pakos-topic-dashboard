@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Tests — PakOS</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #22222e;
+    --accent: #6c63ff;
+    --green: #00d4a0;
+    --yellow: #f5a623;
+    --red: #ff4757;
+    --text: #e8e8f0;
+    --muted: #666680;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { display: flex; gap: 10px; }
+  .brand-name { font-weight: 700; }
+
+  .controls {
+    display: flex; gap: 12px; align-items: center;
+  }
+
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+
+  button:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--accent), #7d7aff);
+    transform: translateY(-1px);
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  main {
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .status-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 8px;
+  }
+
+  .stat-ok { color: var(--green); }
+  .stat-fail { color: var(--red); }
+
+  .tests {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.2s;
+  }
+
+  .test-case:hover {
+    border-color: var(--accent);
+  }
+
+  .test-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .test-icon.pending { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .test-content {
+    flex: 1;
+  }
+
+  .test-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .test-message {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .test-time {
+    font-size: 11px;
+    color: var(--muted);
+    opacity: 0.7;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin: 24px 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .coverage-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+
+  .coverage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--accent));
+    transition: width 0.4s ease;
+  }
+
+  .info-box {
+    background: rgba(108, 99, 255, 0.1);
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .info-box strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span style="font-size: 20px;">🧪</span>
+    <div class="brand-name">Dashboard Health Tests</div>
+  </div>
+  <div class="controls">
+    <button id="runBtn" onclick="runTests()">▶️ Run All Tests</button>
+  </div>
+</header>
+
+<main>
+  <div class="info-box">
+    <strong>💡 What is this?</strong> Real-time tests to validate dashboard health. Click "Run All Tests" to start. Tests check API connectivity, data formats, and system components.
+  </div>
+
+  <div class="status-summary">
+    <div class="stat-card">
+      <div class="stat-value" id="passCount">0</div>
+      <div class="stat-label">Passed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value stat-fail" id="failCount">0</div>
+      <div class="stat-label">Failed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value stat-ok" id="coverage">0%</div>
+      <div class="stat-label">Coverage</div>
+    </div>
+  </div>
+
+  <div class="section-title">API Tests</div>
+  <div class="tests" id="apiTests"></div>
+
+  <div class="section-title">System Health</div>
+  <div class="tests" id="healthTests"></div>
+
+  <div class="section-title">Data Validation</div>
+  <div class="tests" id="dataTests"></div>
+</main>
+
+<script>
+const API_BASE = '/api';
+
+const tests = [
+  {
+    name: '✓ API is reachable',
+    category: 'apiTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics');
+      if (res.status !== 200) throw new Error(`Status ${res.status}`);
+    }
+  },
+  {
+    name: '✓ Topics endpoint returns JSON',
+    category: 'apiTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics');
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error('Not an array');
+    }
+  },
+  {
+    name: '✓ Topics have required fields',
+    category: 'dataTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics');
+      const data = await res.json();
+      if (data.length === 0) throw new Error('No topics');
+      const t = data[0];
+      if (!t.id || !t.name || !t.topic_id) throw new Error('Missing fields');
+    }
+  },
+  {
+    name: '✓ Can fetch specific topic',
+    category: 'apiTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics');
+      const data = await res.json();
+      if (data.length === 0) throw new Error('No topics to fetch');
+      const topicId = data[0].id;
+      const res2 = await fetch(API_BASE + '/topics/' + topicId);
+      if (res2.status !== 200) throw new Error(`Status ${res2.status}`);
+    }
+  },
+  {
+    name: '✓ Topic detail has tabs data',
+    category: 'dataTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics');
+      const data = await res.json();
+      if (data.length === 0) throw new Error('No topics');
+      const res2 = await fetch(API_BASE + '/topics/' + data[0].id);
+      const detail = await res2.json();
+      if (!detail.issues && !detail.memory && !detail.chat) {
+        throw new Error('Missing detail tabs');
+      }
+    }
+  },
+  {
+    name: '✓ System is responsive',
+    category: 'healthTests',
+    fn: async () => {
+      const start = performance.now();
+      await fetch(API_BASE + '/topics');
+      const time = performance.now() - start;
+      if (time > 5000) throw new Error(`Slow: ${time}ms`);
+    }
+  },
+  {
+    name: '✓ No 500 errors',
+    category: 'healthTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics');
+      if (res.status >= 500) throw new Error(`Server error: ${res.status}`);
+    }
+  },
+  {
+    name: '✓ Can handle missing topics',
+    category: 'healthTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics/fake-topic-99999');
+      if (res.status !== 404) throw new Error(`Expected 404, got ${res.status}`);
+    }
+  },
+  {
+    name: '✓ Topic IDs are consistent',
+    category: 'dataTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics');
+      const data = await res.json();
+      for (const t of data) {
+        if (!t.id.startsWith('topic-')) throw new Error(`Bad ID: ${t.id}`);
+      }
+    }
+  },
+  {
+    name: '✓ Progress values are valid',
+    category: 'dataTests',
+    fn: async () => {
+      const res = await fetch(API_BASE + '/topics');
+      const data = await res.json();
+      for (const t of data) {
+        if (typeof t.progress !== 'number' || t.progress < 0 || t.progress > 100) {
+          throw new Error(`Invalid progress: ${t.progress}`);
+        }
+      }
+    }
+  }
+];
+
+async function runTests() {
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  document.querySelectorAll('.tests').forEach(el => el.innerHTML = '');
+
+  let passed = 0;
+  let failed = 0;
+
+  for (const test of tests) {
+    const start = performance.now();
+    const el = createTestElement(test.name, 'pending');
+    document.getElementById(test.category).appendChild(el);
+
+    try {
+      await test.fn();
+      const time = (performance.now() - start).toFixed(0);
+      updateTestElement(el, 'pass', null, time + 'ms');
+      passed++;
+    } catch (err) {
+      updateTestElement(el, 'fail', err.message);
+      failed++;
+    }
+  }
+
+  const total = passed + failed;
+  const coverage = Math.round((passed / total) * 100);
+
+  document.getElementById('passCount').textContent = passed;
+  document.getElementById('failCount').textContent = failed;
+  document.getElementById('coverage').textContent = coverage + '%';
+  document.getElementById('coverage').className = coverage >= 80 ? 'stat-ok' : coverage >= 60 ? 'stat-value' : 'stat-fail';
+
+  btn.disabled = false;
+  btn.textContent = '▶️ Run All Tests';
+}
+
+function createTestElement(name, status) {
+  const el = document.createElement('div');
+  el.className = 'test-case';
+  const icon = {pass: '✅', fail: '❌', pending: '⏳'}[status];
+  el.innerHTML = `
+    <div class="test-icon ${status}">${icon}</div>
+    <div class="test-content">
+      <div class="test-name">${name}</div>
+      <div class="test-message" id="msg"></div>
+      <div class="test-time" id="time"></div>
+    </div>
+  `;
+  return el;
+}
+
+function updateTestElement(el, status, message, time) {
+  const icon = {pass: '✅', fail: '❌'}[status];
+  el.querySelector('.test-icon').textContent = icon;
+  el.querySelector('.test-icon').className = 'test-icon ' + status;
+  if (message) el.querySelector('#msg').textContent = message;
+  if (time) el.querySelector('#time').textContent = time;
+}
+</script>
+
+</body>
+</html>
