@@ -235,29 +235,29 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
 </style>
 </head>
-<body class="bg-gray-50 min-h-screen" x-data="dashboard()" x-init="init()">
+<body class="bg-gray-900 text-gray-100 min-h-screen" x-data="dashboard()" x-init="init()">
 
 <!-- Header -->
-<div class="bg-white border-b border-gray-200 sticky top-0 z-50">
+<div class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
   <div class="max-w-screen-xl mx-auto px-6 py-3 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <span class="text-2xl">🗂️</span>
       <div>
-        <h1 class="text-lg font-bold text-gray-900">PakOS Topics</h1>
-        <p class="text-xs text-gray-500" x-text="topics.length + ' topics'"></p>
+        <h1 class="text-lg font-bold text-white">PakOS Topics</h1>
+        <p class="text-xs text-gray-400" x-text="topics.length + ' topics'"></p>
       </div>
     </div>
     <div class="flex items-center gap-3">
       <!-- Search -->
       <input x-model="search" type="text" placeholder="Search topics..."
-        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-48">
+        class="px-3 py-1.5 text-sm bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48">
       <!-- View switcher -->
-      <div class="flex bg-gray-100 rounded-lg p-1 gap-1">
-        <button @click="view='card'" :class="view==='card' ? 'bg-white shadow text-blue-600' : 'text-gray-500'"
+      <div class="flex bg-gray-700 rounded-lg p-1 gap-1">
+        <button @click="view='card'" :class="view==='card' ? 'bg-gray-600 shadow text-blue-400' : 'text-gray-400'"
           class="px-3 py-1 rounded text-sm font-medium">Cards</button>
-        <button @click="view='list'" :class="view==='list' ? 'bg-white shadow text-blue-600' : 'text-gray-500'"
+        <button @click="view='list'" :class="view==='list' ? 'bg-gray-600 shadow text-blue-400' : 'text-gray-400'"
           class="px-3 py-1 rounded text-sm font-medium">List</button>
-        <button @click="view='kanban'" :class="view==='kanban' ? 'bg-white shadow text-blue-600' : 'text-gray-500'"
+        <button @click="view='kanban'" :class="view==='kanban' ? 'bg-gray-600 shadow text-blue-400' : 'text-gray-400'"
           class="px-3 py-1 rounded text-sm font-medium">Kanban</button>
       </div>
       <button @click="refresh()" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -276,28 +276,28 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 <div x-show="!loading && view==='card'" class="max-w-screen-xl mx-auto px-6 py-6">
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     <template x-for="t in filtered" :key="t.id">
-      <div @click="openTopic(t)" class="card-hover bg-white rounded-xl border border-gray-200 p-5 cursor-pointer">
+      <div @click="openTopic(t)" class="card-hover bg-gray-800 rounded-xl border border-gray-700 p-5 cursor-pointer hover:border-gray-600">
         <div class="flex items-start justify-between mb-3">
-          <h3 class="font-semibold text-gray-900 text-sm leading-tight" x-text="t.name"></h3>
-          <span :class="t.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
+          <h3 class="font-semibold text-white text-sm leading-tight" x-text="t.name"></h3>
+          <span :class="t.status === 'active' ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-400'"
             class="text-xs px-2 py-0.5 rounded-full ml-2 shrink-0" x-text="t.status"></span>
         </div>
         <!-- Progress -->
         <div class="mb-3">
-          <div class="flex justify-between text-xs text-gray-500 mb-1">
+          <div class="flex justify-between text-xs text-gray-400 mb-1">
             <span>Progress</span><span x-text="t.progress + '%'"></span>
           </div>
-          <div class="bg-gray-100 rounded-full h-1.5">
+          <div class="bg-gray-700 rounded-full h-1.5">
             <div class="progress-bar bg-blue-500 h-1.5 rounded-full" :style="'width:' + t.progress + '%'"></div>
           </div>
         </div>
         <!-- Meta -->
-        <div class="flex items-center gap-3 text-xs text-gray-400">
+        <div class="flex items-center gap-3 text-xs text-gray-500">
           <span x-show="t.has_issues">📋 Issues</span>
           <span x-show="t.has_memory">🧠 Memory</span>
           <span class="ml-auto" x-text="'♥ ' + t.heartbeat"></span>
         </div>
-        <div class="mt-2 text-xs text-gray-400" x-text="'#' + t.topic_id"></div>
+        <div class="mt-2 text-xs text-gray-500" x-text="'#' + t.topic_id"></div>
       </div>
     </template>
   </div>
@@ -305,9 +305,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
 <!-- List View -->
 <div x-show="!loading && view==='list'" class="max-w-screen-xl mx-auto px-6 py-6">
-  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
     <table class="w-full">
-      <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+      <thead class="bg-gray-900 text-xs text-gray-400 uppercase">
         <tr>
           <th class="px-4 py-3 text-left">Topic</th>
           <th class="px-4 py-3 text-left">Status</th>
@@ -319,7 +319,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <tbody class="divide-y divide-gray-100">
         <template x-for="t in filtered" :key="t.id">
           <tr @click="openTopic(t)" class="hover:bg-gray-50 cursor-pointer">
-            <td class="px-4 py-3 text-sm font-medium text-gray-900" x-text="t.name"></td>
+            <td class="px-4 py-3 text-sm font-medium text-white" x-text="t.name"></td>
             <td class="px-4 py-3">
               <span :class="t.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
                 class="text-xs px-2 py-0.5 rounded-full" x-text="t.status"></span>
@@ -353,8 +353,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         </div>
         <div class="space-y-2">
           <template x-for="t in filtered.filter(t => t.status === col)" :key="t.id">
-            <div @click="openTopic(t)" class="card-hover bg-white rounded-lg border border-gray-200 p-3 cursor-pointer">
-              <p class="text-sm font-medium text-gray-900 mb-2" x-text="t.name"></p>
+            <div @click="openTopic(t)" class="card-hover bg-gray-800 rounded-lg border border-gray-700 p-3 cursor-pointer">
+              <p class="text-sm font-medium text-white mb-2" x-text="t.name"></p>
               <div class="bg-gray-100 rounded-full h-1 mb-2">
                 <div class="progress-bar bg-blue-500 h-1 rounded-full" :style="'width:' + t.progress + '%'"></div>
               </div>
@@ -375,20 +375,20 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   <!-- Backdrop -->
   <div class="flex-1 bg-black bg-opacity-40" @click="selected = null"></div>
   <!-- Drawer -->
-  <div class="w-full max-w-2xl bg-white h-full overflow-y-auto shadow-2xl scrollbar-thin" x-show="selected">
+  <div class="w-full max-w-2xl bg-gray-800 h-full overflow-y-auto shadow-2xl scrollbar-thin" x-show="selected">
     <template x-if="selected">
       <div>
         <!-- Drawer header -->
-        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+        <div class="sticky top-0 bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between z-10">
           <div>
-            <h2 class="text-lg font-bold text-gray-900" x-text="selected.name"></h2>
+            <h2 class="text-lg font-bold text-white" x-text="selected.name"></h2>
             <p class="text-xs text-gray-500" x-text="'#' + selected.topic_id + ' · ' + selected.status + ' · ♥ ' + selected.heartbeat"></p>
           </div>
           <button @click="selected = null" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
         </div>
 
         <!-- Tabs -->
-        <div class="border-b border-gray-200 px-6">
+        <div class="border-b border-gray-700 px-6">
           <div class="flex gap-1">
             <template x-for="tab in ['overview','issues','memory','chat','skills','files','crons']" :key="tab">
               <button @click="activeTab = tab"
@@ -413,15 +413,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
           <div class="grid grid-cols-3 gap-3">
             <div class="bg-gray-50 rounded-lg p-3 text-center">
-              <p class="text-2xl font-bold text-gray-900" x-text="detail?.issues?.length || 0"></p>
+              <p class="text-2xl font-bold text-white" x-text="detail?.issues?.length || 0"></p>
               <p class="text-xs text-gray-500">Issues</p>
             </div>
             <div class="bg-gray-50 rounded-lg p-3 text-center">
-              <p class="text-2xl font-bold text-gray-900" x-text="detail?.memory?.length || 0"></p>
+              <p class="text-2xl font-bold text-white" x-text="detail?.memory?.length || 0"></p>
               <p class="text-xs text-gray-500">Memory files</p>
             </div>
             <div class="bg-gray-50 rounded-lg p-3 text-center">
-              <p class="text-2xl font-bold text-gray-900" x-text="detail?.skills?.length || 0"></p>
+              <p class="text-2xl font-bold text-white" x-text="detail?.skills?.length || 0"></p>
               <p class="text-xs text-gray-500">Skills</p>
             </div>
           </div>
@@ -430,7 +430,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         <!-- Tab: Issues -->
         <div x-show="activeTab === 'issues'" class="p-6">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="font-semibold text-gray-900">Issues</h3>
+            <h3 class="font-semibold text-white">Issues</h3>
             <button @click="addIssue()" class="text-sm px-3 py-1 bg-blue-600 text-white rounded-lg">+ Add</button>
           </div>
           <div x-show="!detail?.issues?.length" class="text-sm text-gray-400 text-center py-8">No issues</div>
@@ -440,7 +440,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 <input type="checkbox" :checked="issue.done" @change="toggleIssue(i)"
                   class="mt-0.5 h-4 w-4 text-blue-600 rounded">
                 <div class="flex-1">
-                  <p :class="issue.done ? 'line-through text-gray-400' : 'text-gray-900'" class="text-sm" x-text="issue.title"></p>
+                  <p :class="issue.done ? 'line-through text-gray-500' : 'text-gray-100'" class="text-sm" x-text="issue.title"></p>
                   <p x-show="issue.notes" class="text-xs text-gray-400 mt-0.5" x-text="issue.notes"></p>
                 </div>
                 <button @click="removeIssue(i)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 text-xs">✕</button>
@@ -455,11 +455,11 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         <!-- Tab: Memory -->
         <div x-show="activeTab === 'memory'" class="p-6">
-          <h3 class="font-semibold text-gray-900 mb-4">Memory Files</h3>
+          <h3 class="font-semibold text-white mb-4">Memory Files</h3>
           <div x-show="!detail?.memory?.length" class="text-sm text-gray-400 text-center py-8">No memory files</div>
           <div class="space-y-3">
             <template x-for="f in (detail?.memory || [])" :key="f.filename">
-              <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <div class="border border-gray-700 rounded-lg overflow-hidden bg-gray-700">
                 <div class="flex items-center justify-between px-4 py-2 bg-gray-50">
                   <span class="text-sm font-medium text-gray-700" x-text="f.filename"></span>
                   <span class="text-xs text-gray-400" x-text="f.modified + ' · ' + f.size + ' B'"></span>
@@ -472,7 +472,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         <!-- Tab: Chat -->
         <div x-show="activeTab === 'chat'" class="p-6">
-          <h3 class="font-semibold text-gray-900 mb-4">Chat Transcript</h3>
+          <h3 class="font-semibold text-white mb-4">Chat Transcript</h3>
           <div x-show="!detail?.transcript?.length" class="text-sm text-gray-400 text-center py-8">No transcript available</div>
           <div class="space-y-2 max-h-[60vh] overflow-y-auto scrollbar-thin">
             <template x-for="(msg, i) in (detail?.transcript || [])" :key="i">
@@ -487,7 +487,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         <!-- Tab: Skills -->
         <div x-show="activeTab === 'skills'" class="p-6">
-          <h3 class="font-semibold text-gray-900 mb-4">Skills</h3>
+          <h3 class="font-semibold text-white mb-4">Skills</h3>
           <div x-show="!detail?.skills?.length" class="text-sm text-gray-400 text-center py-8">No skills registered</div>
           <div class="flex flex-wrap gap-2">
             <template x-for="s in (detail?.skills || [])" :key="s">
@@ -498,7 +498,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         <!-- Tab: Files -->
         <div x-show="activeTab === 'files'" class="p-6">
-          <h3 class="font-semibold text-gray-900 mb-4">Workspace Files</h3>
+          <h3 class="font-semibold text-white mb-4">Workspace Files</h3>
           <div x-show="!detail?.files?.length" class="text-sm text-gray-400 text-center py-8">No files</div>
           <div class="space-y-1">
             <template x-for="f in (detail?.files || [])" :key="f.path">
@@ -512,12 +512,12 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         <!-- Tab: Crons -->
         <div x-show="activeTab === 'crons'" class="p-6">
-          <h3 class="font-semibold text-gray-900 mb-4">Cron Jobs & Heartbeats</h3>
+          <h3 class="font-semibold text-white mb-4">Cron Jobs & Heartbeats</h3>
           <div x-show="!detail?.crons?.length" class="text-sm text-gray-400 text-center py-8">No crons configured</div>
           <div class="space-y-3">
             <template x-for="(c, i) in (detail?.crons || [])" :key="i">
               <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-sm font-medium text-gray-900" x-text="c.label || c.id || 'Cron ' + i"></p>
+                <p class="text-sm font-medium text-white" x-text="c.label || c.id || 'Cron ' + i"></p>
                 <p class="text-xs text-gray-500 mt-0.5" x-text="c.schedule || c.cron || JSON.stringify(c)"></p>
               </div>
             </template>
