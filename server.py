@@ -644,7 +644,8 @@ function dashboard() {
     formatDatetime(timestamp) {
       if (!timestamp) return 'Unknown';
       const date = new Date(timestamp * 1000);
-      // Format: "Mar 22, 2026 at 12:18:45 PM"
+      // Format: "Fri, Mar 22, 2026 at 12:18:45 PM"
+      const dayOfWeek = date.toLocaleString('en-US', { weekday: 'short' });
       const options = { 
         year: 'numeric', 
         month: 'short', 
@@ -654,7 +655,8 @@ function dashboard() {
         second: '2-digit',
         hour12: true
       };
-      return date.toLocaleString('en-US', options);
+      const dateStr = date.toLocaleString('en-US', options);
+      return `${dayOfWeek}, ${dateStr}`;
     },
 
     async openTopic(t) {
