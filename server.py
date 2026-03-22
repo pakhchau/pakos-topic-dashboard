@@ -274,6 +274,16 @@ def update_issues(topic_id: str, payload: dict):
 def serve_ui():
     return HTMLResponse(DASHBOARD_HTML)
 
+@app.get("/changelog")
+def serve_changelog():
+    try:
+        changelog_file = BASE / "changelog.html"
+        if changelog_file.exists():
+            return HTMLResponse(changelog_file.read_text())
+        return HTMLResponse("<h1>Changelog not found</h1>")
+    except:
+        return HTMLResponse("<h1>Error loading changelog</h1>")
+
 # ─── Frontend HTML ─────────────────────────────────────────────────────────────
 
 DASHBOARD_HTML = """<!DOCTYPE html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Changelog — PakOS Topic Dashboard</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #22222e;
+    --accent: #6c63ff;
+    --green: #00d4a0;
+    --text: #e8e8f0;
+    --muted: #666680;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex; align-items: center;
+  }
+  .brand { display: flex; gap: 10px; }
+  .brand-name { font-weight: 700; }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .changelog {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .version-block {
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .version-block:last-child {
+    border-bottom: none;
+  }
+
+  .version-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .version-badge {
+    background: var(--accent);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .version-date {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .emoji {
+    font-size: 18px;
+  }
+
+  h2 {
+    font-size: 18px;
+    color: var(--text);
+    margin: 16px 0 12px 0;
+  }
+
+  h3 {
+    font-size: 14px;
+    color: var(--text);
+    margin: 12px 0 8px 0;
+    font-weight: 600;
+  }
+
+  ul {
+    margin-left: 20px;
+    margin-bottom: 12px;
+  }
+
+  li {
+    margin-bottom: 8px;
+    color: var(--muted);
+  }
+
+  strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  code {
+    background: var(--bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Monaco', monospace;
+    color: var(--green);
+    font-size: 12px;
+  }
+
+  .section-divider {
+    border-top: 1px dashed var(--border);
+    margin: 24px 0;
+  }
+
+  .status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  .status-added { background: rgba(0,212,160,0.2); color: var(--green); }
+  .status-changed { background: rgba(108,99,255,0.2); color: var(--accent); }
+  .status-fixed { background: rgba(245,166,35,0.2); color: #f5a623; }
+  .status-planned { background: rgba(100,100,150,0.2); color: #7d7aff; }
+
+  nav {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  nav a {
+    display: inline-block;
+    padding: 8px 12px;
+    margin-right: 8px;
+    background: var(--surface);
+    color: var(--accent);
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+
+  nav a:hover {
+    background: var(--card);
+    border-color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span style="font-size: 20px;">📋</span>
+    <div class="brand-name">Changelog — PakOS Topic Dashboard</div>
+  </div>
+</header>
+
+<main>
+  <div class="changelog">
+    <h1>📋 Complete Version History</h1>
+    <p class="subtitle">All changes to PakOS Topic Dashboard, documented and dated.</p>
+
+    <nav>
+      <a href="/">← Back to Dashboard</a>
+      <a href="/docs-page">📖 Docs</a>
+      <a href="/test-page">🧪 Tests</a>
+    </nav>
+
+    <!-- Version 1.0.0 -->
+    <div class="version-block">
+      <div class="version-header">
+        <span class="version-badge">v1.0.0</span>
+        <span class="version-date">2026-03-22</span>
+        <span class="emoji">✨</span>
+      </div>
+
+      <h2>Initial Release</h2>
+
+      <h3><span class="status-pill status-added">ADDED</span></h3>
+      <ul>
+        <li><strong>Dashboard Views</strong>
+          <ul>
+            <li>Card view: Topics as grid cards with progress, status, heartbeat icons</li>
+            <li>List view: Sortable table with columns (Topic, Status, Progress, Created, Updated, Last Activity, Heartbeat)</li>
+            <li>Kanban view: Topics organized by workflow status (Active, Paused, Dormant, Completed)</li>
+            <li>Detail panel: Right sidebar with rich topic information</li>
+          </ul>
+        </li>
+        <li><strong>Core Features</strong>
+          <ul>
+            <li>Real-time topic listing from <code>/root/clawd/topics/</code></li>
+            <li>Issue tracking and inline editing (ISSUES.md sync)</li>
+            <li>Memory viewer showing recent session notes</li>
+            <li>Chat transcript preview (50+ messages)</li>
+            <li>Skills inventory per topic</li>
+            <li>File browser for topic workspace</li>
+            <li>Heartbeat/cron status display</li>
+            <li>Sort topics by last activity (most recent first)</li>
+            <li>Beautiful date/time formatting with day of week</li>
+          </ul>
+        </li>
+        <li><strong>API Endpoints</strong>
+          <ul>
+            <li><code>GET /api/topics</code> — List all topics with metadata (sorted by last activity)</li>
+            <li><code>GET /api/topics/{topic_id}</code> — Detailed topic information</li>
+            <li><code>PUT /api/topics/{topic_id}/issues</code> — Update issues (saves to ISSUES.md)</li>
+            <li><code>GET /</code> — Main dashboard HTML</li>
+            <li><code>GET /docs-page</code> — Full documentation (6 sections)</li>
+            <li><code>GET /test-page</code> — Health test runner (10+ e2e tests)</li>
+            <li><code>GET /changelog</code> — This version history</li>
+          </ul>
+        </li>
+        <li><strong>Documentation</strong>
+          <ul>
+            <li>Comprehensive <code>/docs-page</code> with API reference, views guide, data sources, FAQ</li>
+            <li>End-to-end test suite on <code>/test-page</code> validating API, data, system health</li>
+            <li>Complete changelog accessible from dashboard</li>
+          </ul>
+        </li>
+        <li><strong>Infrastructure</strong>
+          <ul>
+            <li>GitHub repository: <a href="https://github.com/pakhchau/pakos-topic-dashboard" target="_blank">pakhchau/pakos-topic-dashboard</a></li>
+            <li>Systemd service: <code>topic-dashboard.service</code> on port 8080</li>
+            <li>Dark theme matching PakOS brand</li>
+            <li>Alpine.js for interactivity (minimal JS dependencies)</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3><span class="status-pill status-fixed">FIXED</span></h3>
+      <ul>
+        <li>Dark mode applied to all UI elements (light gray backgrounds → dark gray)</li>
+        <li>Contrast issues fixed (white text on dark backgrounds)</li>
+        <li>Issue parsing now handles both <code>- [ ]</code> and <code>[ ]</code> checkbox formats</li>
+        <li>Transcript message parsing fixed (nested message object format)</li>
+        <li>Empty topics filtered out (only show topics with workspaces and valid names)</li>
+      </ul>
+
+      <h3 style="margin-top: 20px;">Technical Details</h3>
+      <ul>
+        <li><strong>Backend:</strong> FastAPI (Python 3)</li>
+        <li><strong>Frontend:</strong> Alpine.js + Tailwind CSS</li>
+        <li><strong>Data Sources:</strong> Filesystem (<code>/root/clawd/topics/*/</code>)</li>
+        <li><strong>State Management:</strong> Alpine.js reactivity</li>
+        <li><strong>Styling:</strong> Dark mode, responsive design</li>
+        <li><strong>Performance:</strong> Sub-second API responses, efficient DOM updates</li>
+      </ul>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Unreleased -->
+    <div class="version-block">
+      <div class="version-header">
+        <span class="version-badge" style="background: #666680;">Unreleased</span>
+        <span class="emoji">🔄</span>
+      </div>
+
+      <h2>Phase 2: Enhancements (In Development)</h2>
+
+      <h3><span class="status-pill status-planned">PLANNED</span></h3>
+      <ul>
+        <li><strong>Phase 2.1 (1 week)</strong>
+          <ul>
+            <li>Kanban drag-drop between columns</li>
+            <li>Memory search with date filters</li>
+            <li>Snooze heartbeat feature (1h/4h/24h options)</li>
+          </ul>
+        </li>
+        <li><strong>Phase 2.2 (1 week)</strong>
+          <ul>
+            <li>File browser (directory tree)</li>
+            <li>Transcript viewer with search</li>
+            <li>Cron/heartbeat log viewer</li>
+          </ul>
+        </li>
+        <li><strong>Phase 2.3 (1 week)</strong>
+          <ul>
+            <li>Live WebSocket updates</li>
+            <li>Dark/light theme toggle</li>
+            <li>Export/import features</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Legend -->
+    <div style="margin-top: 24px;">
+      <h3>Version Numbering</h3>
+      <ul>
+        <li><strong>Major (1.x.x):</strong> New views, significant features, architecture changes</li>
+        <li><strong>Minor (.1.x):</strong> New capabilities, enhancements to existing features</li>
+        <li><strong>Patch (.x.1):</strong> Bug fixes, optimizations, documentation updates</li>
+      </ul>
+    </div>
+
+    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px;">
+      <p>Last updated: 2026-03-22 | <a href="https://github.com/pakhchau/pakos-topic-dashboard/releases" target="_blank" style="color: var(--accent);">View on GitHub</a></p>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
