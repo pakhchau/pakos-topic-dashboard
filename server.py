@@ -593,92 +593,107 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Tab: Issues / Goals -->
-        <div x-show="activeTab === 'issues'" class="p-6">
+        <!-- Tab: Issues / Todo List (Agent Workspace Interface) -->
+        <div x-show="activeTab === 'issues'" class="p-6 flex flex-col h-full">
+          <!-- Info banner -->
+          <div class="mb-6 p-4 bg-blue-900 bg-opacity-30 border border-blue-700 rounded-lg text-xs text-blue-200">
+            <p><strong>💡 Agent Interface:</strong> Edit issues here. The topic agent reads and manages this list throughout the session.</p>
+          </div>
+
           <!-- Header with stats -->
           <div class="mb-6">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-bold text-white">Issues & Goals</h2>
-              <button @click="addIssue()" class="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">+ New Issue</button>
+              <h2 class="text-lg font-bold text-white">Work Items</h2>
+              <button @click="addIssue()" class="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">+ Add Task</button>
             </div>
             
-            <!-- Progress summary -->
-            <div class="grid grid-cols-3 gap-3">
+            <!-- Progress bar + summary -->
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-gray-400">Progress</span>
+                <span class="font-bold text-blue-400" x-text="Math.round(((detail?.issues || []).filter(i => i.done).length / ((detail?.issues?.length || 1))) * 100) + '%'"></span>
+              </div>
+              <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500 transition-all" :style="'width: ' + Math.round(((detail?.issues || []).filter(i => i.done).length / ((detail?.issues?.length || 1))) * 100) + '%'"></div>
+              </div>
+            </div>
+
+            <!-- Stats grid -->
+            <div class="grid grid-cols-3 gap-2">
               <div class="bg-gray-700 rounded-lg p-3">
-                <p class="text-2xl font-bold text-white" x-text="detail?.issues?.length || 0"></p>
-                <p class="text-xs text-gray-500 mt-1">Total Issues</p>
+                <p class="text-xl font-bold text-white" x-text="detail?.issues?.length || 0"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Total Tasks</p>
               </div>
               <div class="bg-gray-700 rounded-lg p-3">
-                <p class="text-2xl font-bold text-green-400" x-text="(detail?.issues || []).filter(i => i.done).length"></p>
-                <p class="text-xs text-gray-500 mt-1">Completed</p>
+                <p class="text-xl font-bold text-green-400" x-text="(detail?.issues || []).filter(i => i.done).length"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Done</p>
               </div>
               <div class="bg-gray-700 rounded-lg p-3">
-                <p class="text-2xl font-bold text-yellow-400" x-text="(detail?.issues || []).filter(i => !i.done).length"></p>
-                <p class="text-xs text-gray-500 mt-1">Open</p>
+                <p class="text-xl font-bold text-yellow-400" x-text="(detail?.issues || []).filter(i => !i.done).length"></p>
+                <p class="text-xs text-gray-500 mt-0.5">Remaining</p>
               </div>
             </div>
           </div>
 
-          <!-- Filters -->
+          <!-- Quick filters -->
           <div class="flex gap-2 mb-4 pb-4 border-b border-gray-700">
-            <button @click="issueFilter = 'all'" :class="issueFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
-              class="text-xs px-3 py-1.5 rounded-full transition">All</button>
             <button @click="issueFilter = 'open'" :class="issueFilter === 'open' ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
-              class="text-xs px-3 py-1.5 rounded-full transition">Open</button>
+              class="text-xs px-3 py-1.5 rounded-full font-medium transition">
+              <span x-text="'📌 Open (' + ((detail?.issues || []).filter(i => !i.done).length) + ')'"></span>
+            </button>
             <button @click="issueFilter = 'done'" :class="issueFilter === 'done' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
-              class="text-xs px-3 py-1.5 rounded-full transition">Done</button>
+              class="text-xs px-3 py-1.5 rounded-full font-medium transition">
+              <span x-text="'✓ Done (' + ((detail?.issues || []).filter(i => i.done).length) + ')'"></span>
+            </button>
+            <button @click="issueFilter = 'all'" :class="issueFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+              class="text-xs px-3 py-1.5 rounded-full font-medium transition">All</button>
           </div>
 
           <!-- Empty state -->
-          <div x-show="!detail?.issues?.length" class="text-center py-12">
-            <p class="text-5xl mb-3">📋</p>
-            <p class="text-gray-400 text-sm">No issues yet. Create one to get started!</p>
+          <div x-show="!detail?.issues?.length" class="text-center py-12 flex-1 flex flex-col items-center justify-center">
+            <p class="text-5xl mb-3">📝</p>
+            <p class="text-gray-400 text-sm">No tasks yet.</p>
+            <p class="text-gray-500 text-xs mt-2">Add items for the agent to work on.</p>
           </div>
 
-          <!-- Issues list -->
-          <div class="space-y-3">
+          <!-- Tasks list -->
+          <div class="space-y-2 flex-1 overflow-y-auto pr-2">
             <template x-for="(issue, i) in (detail?.issues || []).filter(issue => issueFilter === 'all' || (issueFilter === 'done' ? issue.done : !issue.done))" :key="i">
-              <div :class="issue.done ? 'bg-gray-700 border-gray-700' : 'bg-gray-750 border-gray-650 hover:border-blue-600'"
-                class="border-l-4 transition" :style="'border-left-color: ' + (issue.done ? '#10b981' : '#3b82f6')">
+              <div :class="issue.done ? 'bg-gray-700 border-l-green-500' : 'bg-gray-800 border-l-yellow-500 hover:border-l-blue-400'"
+                class="border-l-4 p-4 rounded transition">
                 
-                <div class="p-4 hover:bg-gray-700 transition">
-                  <!-- Checkbox + Title -->
-                  <div class="flex items-start gap-3 mb-2">
-                    <input type="checkbox" :checked="issue.done" @change="toggleIssue(detail?.issues?.indexOf(issue))"
-                      class="mt-1 h-5 w-5 text-blue-500 rounded cursor-pointer">
-                    <div class="flex-1">
-                      <p :class="issue.done ? 'line-through text-gray-500' : 'text-white font-medium'"
-                        class="text-sm" x-text="issue.title"></p>
-                    </div>
-                    <button @click="removeIssue(detail?.issues?.indexOf(issue))" 
-                      class="text-gray-500 hover:text-red-400 text-sm transition">✕</button>
+                <!-- Checkbox + Title -->
+                <div class="flex items-start gap-3 mb-2">
+                  <input type="checkbox" :checked="issue.done" @change="toggleIssue(i)"
+                    class="mt-1 h-5 w-5 text-blue-500 rounded cursor-pointer flex-shrink-0">
+                  <div class="flex-1 min-w-0">
+                    <input type="text" :value="issue.title" @input="issue.title = $event.target.value"
+                      :class="issue.done ? 'line-through text-gray-500' : 'text-white'"
+                      class="w-full bg-transparent text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-1 rounded -mx-2 transition"
+                      placeholder="Task name...">
                   </div>
-                  
-                  <!-- Notes/Description -->
-                  <textarea v-if="false" x-show="issue.notes || editingIssue === i" @blur="editingIssue = null"
-                    :value="issue.notes"
-                    @input="issue.notes = $event.target.value"
-                    class="w-full text-xs p-2 bg-gray-600 text-gray-200 rounded border border-gray-500 focus:border-blue-500 focus:outline-none"
-                    placeholder="Add notes or description..."></textarea>
-                  <p x-show="issue.notes && editingIssue !== i" 
-                    @click="editingIssue = i"
-                    class="text-xs text-gray-400 mt-2 p-2 rounded cursor-pointer hover:bg-gray-700 transition"
-                    x-text="issue.notes"></p>
-                  <p x-show="!issue.notes && editingIssue !== i"
-                    @click="editingIssue = i"
-                    class="text-xs text-gray-600 italic mt-2 p-2 rounded cursor-pointer hover:bg-gray-700 transition">
-                    + Click to add description
-                  </p>
+                  <button @click="removeIssue(i)" 
+                    class="text-gray-600 hover:text-red-400 text-xs flex-shrink-0 transition">✕</button>
+                </div>
+                
+                <!-- Notes/Description -->
+                <div class="ml-8">
+                  <textarea :value="issue.notes" @input="issue.notes = $event.target.value"
+                    class="w-full text-xs p-2 bg-gray-700 text-gray-200 rounded border border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none transition"
+                    rows="2"
+                    placeholder="Add notes or context..."></textarea>
                 </div>
               </div>
             </template>
           </div>
 
-          <!-- Save button -->
-          <button x-show="detail?.issues?.length" @click="saveIssues()"
-            class="mt-6 w-full py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition">
-            💾 Save Changes
-          </button>
+          <!-- Save button (sticky) -->
+          <div class="mt-4 pt-4 border-t border-gray-700">
+            <button @click="saveIssues()"
+              class="w-full py-3 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition">
+              💾 Save to ISSUES.md
+            </button>
+          </div>
         </div>
 
         <!-- Tab: Memory -->
