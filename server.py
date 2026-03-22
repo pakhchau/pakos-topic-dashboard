@@ -269,7 +269,14 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
 <!-- Loading -->
 <div x-show="loading" class="flex items-center justify-center py-20">
-  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+  <p class="ml-4 text-gray-400">Loading topics...</p>
+</div>
+
+<!-- Empty State -->
+<div x-show="!loading && filtered.length === 0" class="flex flex-col items-center justify-center py-20">
+  <p class="text-gray-500 text-lg">No topics found</p>
+  <p class="text-gray-600 text-sm mt-2">Try adjusting your search</p>
 </div>
 
 <!-- Card View -->
@@ -372,8 +379,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
 <!-- Topic Detail Drawer -->
 <div x-show="selected" x-cloak class="fixed inset-0 z-50 flex" @keydown.escape.window="selected = null">
-  <!-- Backdrop -->
-  <div class="flex-1 bg-black bg-opacity-40" @click="selected = null"></div>
+  <!-- Backdrop (click to close) -->
+  <div class="flex-1 bg-black bg-opacity-50 cursor-pointer hover:bg-opacity-60 transition-colors" @click="selected = null"></div>
   <!-- Drawer -->
   <div class="w-full max-w-2xl bg-gray-800 h-full overflow-y-auto shadow-2xl scrollbar-thin" x-show="selected">
     <template x-if="selected">
@@ -384,7 +391,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             <h2 class="text-lg font-bold text-white" x-text="selected.name"></h2>
             <p class="text-xs text-gray-500" x-text="'#' + selected.topic_id + ' · ' + selected.status + ' · ♥ ' + selected.heartbeat"></p>
           </div>
-          <button @click="selected = null" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <button @click="selected = null" class="text-gray-400 hover:text-white text-3xl leading-none font-light">✕</button>
         </div>
 
         <!-- Tabs -->
