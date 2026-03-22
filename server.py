@@ -58,6 +58,25 @@ def get_topic_dir(topic_id: str) -> Path | None:
             return d
     return None
 
+def get_topic_dates(topic_dir: Path) -> tuple[str, str]:
+    """Get created and last updated dates for a topic."""
+    try:
+        # Creation time from folder stat
+        created_time = topic_dir.stat().st_ctime
+        created_str = datetime.fromtimestamp(created_time).strftime("%Y-%m-%d")
+        
+        # Last modified time (most recent file in the folder)
+        files = list(topic_dir.rglob("*"))
+        if files:
+            latest_mtime = max(f.stat().st_mtime for f in files if f.is_file())
+            updated_str = datetime.fromtimestamp(latest_mtime).strftime("%Y-%m-%d")
+        else:
+            updated_str = created_str
+        
+        return created_str, updated_str
+    except Exception:
+        return "Unknown", "Unknown"
+
 def read_issues(topic_dir: Path) -> list[dict]:
     issues_file = topic_dir / "ISSUES.md"
     if not issues_file.exists():
@@ -212,6 +231,9 @@ def list_topics():
         t["has_issues"] = bool(d and (d / "ISSUES.md").exists())
         t["has_memory"] = bool(d and (d / "memory").exists())
         t["last_message_time"] = get_last_message_time(t["id"])
+        created, updated = get_topic_dates(d)
+        t["created"] = created
+        t["updated"] = updated
         enriched.append(t)
     # Sort by last message time (descending = most recent first)
     enriched.sort(key=lambda x: x["last_message_time"], reverse=True)
@@ -359,6 +381,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <th class="px-4 py-3 text-left">Topic</th>
           <th class="px-4 py-3 text-left">Status</th>
           <th class="px-4 py-3 text-left">Progress</th>
+          <th class="px-4 py-3 text-left">Created</th>
+          <th class="px-4 py-3 text-left">Updated</th>
           <th class="px-4 py-3 text-left">Last Activity</th>
           <th class="px-4 py-3 text-left">Heartbeat</th>
         </tr>
@@ -379,6 +403,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 <span class="text-xs text-gray-500" x-text="t.progress + '%'"></span>
               </div>
             </td>
+            <td class="px-4 py-3 text-xs text-gray-400" x-text="t.created"></td>
+            <td class="px-4 py-3 text-xs text-gray-400" x-text="t.updated"></td>
             <td class="px-4 py-3 text-xs text-gray-400" :title="new Date(t.last_message_time * 1000).toLocaleString()" x-text="formatLastActivity(t.last_message_time)"></td>
             <td class="px-4 py-3 text-xs text-gray-500" x-text="t.heartbeat"></td>
           </tr>
