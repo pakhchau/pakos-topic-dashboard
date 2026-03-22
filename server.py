@@ -262,6 +262,16 @@ def list_topics():
         created_time, updated_time = get_topic_dates(d)
         t["created_time"] = created_time  # Unix timestamp
         t["updated_time"] = updated_time  # Unix timestamp
+        
+        # Count issue completion ratio
+        if t["has_issues"]:
+            issues = read_issues(d)
+            t["total_issues"] = len(issues)
+            t["issue_done"] = sum(1 for i in issues if i.get("done"))
+        else:
+            t["total_issues"] = 0
+            t["issue_done"] = 0
+        
         enriched.append(t)
     # Sort by last message time (descending = most recent first)
     enriched.sort(key=lambda x: x["last_message_time"], reverse=True)
@@ -389,13 +399,17 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <span :class="t.status === 'active' ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-400'"
             class="text-xs px-2 py-0.5 rounded-full ml-2 shrink-0" x-text="t.status"></span>
         </div>
-        <!-- Progress -->
+        <!-- Progress + Issues Ratio -->
         <div class="mb-3">
           <div class="flex justify-between text-xs text-gray-400 mb-1">
-            <span>Progress</span><span x-text="t.progress + '%'"></span>
+            <span>Issues</span>
+            <span class="font-semibold text-blue-400" x-show="t.has_issues">
+              <span x-text="(t.issue_done || 0) + '/' + (t.total_issues || 0)"></span>
+            </span>
+            <span class="text-gray-500" x-show="!t.has_issues">—</span>
           </div>
           <div class="bg-gray-700 rounded-full h-1.5">
-            <div class="progress-bar bg-blue-500 h-1.5 rounded-full" :style="'width:' + t.progress + '%'"></div>
+            <div class="progress-bar bg-green-500 h-1.5 rounded-full" :style="'width:' + t.progress + '%'"></div>
           </div>
         </div>
         <!-- Meta -->
