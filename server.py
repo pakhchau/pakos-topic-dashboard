@@ -116,9 +116,16 @@ def read_transcript(topic_id: str, limit: int = 50) -> list[dict]:
     for line in sessions[0].read_text().splitlines()[-200:]:
         try:
             obj = json.loads(line)
-            role = obj.get("role", "")
-            if role in ("user", "assistant"):
+            # Handle both message object format and flat format
+            if obj.get("type") == "message" and "message" in obj:
+                msg = obj["message"]
+                role = msg.get("role", "")
+                content = msg.get("content", "")
+            else:
+                role = obj.get("role", "")
                 content = obj.get("content", "")
+            
+            if role in ("user", "assistant"):
                 if isinstance(content, list):
                     text = " ".join(c.get("text", "") for c in content if isinstance(c, dict) and c.get("type") == "text")
                 else:
