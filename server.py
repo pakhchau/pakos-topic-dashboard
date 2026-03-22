@@ -741,17 +741,24 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         </div>
 
         <!-- Tab: Memory -->
-        <div x-show="activeTab === 'memory'" class="p-6">
+        <div x-show="activeTab === 'memory'" class="p-6 flex flex-col h-full">
           <h3 class="font-semibold text-white mb-4">Memory Files</h3>
-          <div x-show="!detail?.memory?.length" class="text-sm text-gray-400 text-center py-8">No memory files</div>
-          <div class="space-y-3">
+          <div x-show="!detail?.memory?.length" class="text-center py-12 flex flex-col items-center justify-center flex-1">
+            <p class="text-5xl mb-3">🧠</p>
+            <p class="text-gray-400 text-sm">No memory files yet</p>
+          </div>
+          <div class="space-y-4 flex-1 overflow-y-auto pr-2">
             <template x-for="f in (detail?.memory || [])" :key="f.filename">
-              <div class="border border-gray-700 rounded-lg overflow-hidden bg-gray-700">
-                <div class="flex items-center justify-between px-4 py-2 bg-gray-700">
-                  <span class="text-sm font-medium text-gray-700" x-text="f.filename"></span>
-                  <span class="text-xs text-gray-400" x-text="f.modified + ' · ' + f.size + ' B'"></span>
+              <div class="border border-gray-700 rounded-lg overflow-hidden bg-gray-800">
+                <!-- Header -->
+                <div class="flex items-center justify-between px-4 py-3 bg-gray-700 border-b border-gray-600">
+                  <span class="text-sm font-semibold text-white" x-text="f.filename"></span>
+                  <span class="text-xs text-gray-400" x-text="f.modified"></span>
                 </div>
-                <pre class="text-xs text-gray-600 p-3 overflow-x-auto max-h-32 scrollbar-thin" x-text="f.preview"></pre>
+                <!-- Preview (readable) -->
+                <div class="p-4 max-h-64 overflow-y-auto scrollbar-thin">
+                  <pre class="text-sm text-gray-200 whitespace-pre-wrap break-words font-mono leading-relaxed" x-text="f.preview"></pre>
+                </div>
               </div>
             </template>
           </div>
