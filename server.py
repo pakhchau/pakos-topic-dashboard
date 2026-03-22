@@ -173,6 +173,32 @@ def get_crons(topic_id: str) -> list[dict]:
 
 # ─── API ──────────────────────────────────────────────────────────────────────
 
+def get_last_message_time(topic_id: str) -> float:
+    """Get timestamp of last message in transcript, for sorting."""
+    tid = topic_id.replace("topic-", "")
+    agent_id = f"topic-{tid}"
+    try:
+        agent_dir = AGENTS_DIR / agent_id / "sessions"
+        if not agent_dir.exists():
+            return 0
+        sessions = sorted(agent_dir.glob("*.jsonl"), key=lambda f: f.stat().st_mtime, reverse=True)
+        if not sessions:
+            return 0
+        for line in reversed(sessions[0].read_text().splitlines()):
+            try:
+                obj = json.loads(line)
+                if obj.get("type") == "message":
+                    ts = obj.get("timestamp", "")
+                    if ts:
+                        # Parse ISO format timestamp
+                        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                        return dt.timestamp()
+            except Exception:
+                pass
+        return 0
+    except Exception:
+        return 0
+
 @app.get("/api/topics")
 def list_topics():
     topics = get_all_topics()
@@ -182,7 +208,10 @@ def list_topics():
         t["progress"] = compute_progress(d) if d else 0
         t["has_issues"] = bool(d and (d / "ISSUES.md").exists())
         t["has_memory"] = bool(d and (d / "memory").exists())
+        t["last_message_time"] = get_last_message_time(t["id"])
         enriched.append(t)
+    # Sort by last message time (descending = most recent first)
+    enriched.sort(key=lambda x: x["last_message_time"], reverse=True)
     return enriched
 
 @app.get("/api/topics/{topic_id}")
@@ -310,9 +339,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         <div class="flex items-center gap-3 text-xs text-gray-500">
           <span x-show="t.has_issues">📋 Issues</span>
           <span x-show="t.has_memory">🧠 Memory</span>
-          <span class="ml-auto" x-text="'♥ ' + t.heartbeat"></span>
+          <span class="ml-auto" :title="new Date(t.last_message_time * 1000).toLocaleString()" x-text="formatLastActivity(t.last_message_time)"></span>
         </div>
-        <div class="mt-2 text-xs text-gray-500" x-text="'#' + t.topic_id"></div>
+        <div class="mt-2 text-xs text-gray-400" x-text="'#' + t.topic_id"></div>
       </div>
     </template>
   </div>
@@ -327,8 +356,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <th class="px-4 py-3 text-left">Topic</th>
           <th class="px-4 py-3 text-left">Status</th>
           <th class="px-4 py-3 text-left">Progress</th>
+          <th class="px-4 py-3 text-left">Last Activity</th>
           <th class="px-4 py-3 text-left">Heartbeat</th>
-          <th class="px-4 py-3 text-left">ID</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
@@ -347,8 +376,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 <span class="text-xs text-gray-500" x-text="t.progress + '%'"></span>
               </div>
             </td>
+            <td class="px-4 py-3 text-xs text-gray-400" :title="new Date(t.last_message_time * 1000).toLocaleString()" x-text="formatLastActivity(t.last_message_time)"></td>
             <td class="px-4 py-3 text-xs text-gray-500" x-text="t.heartbeat"></td>
-            <td class="px-4 py-3 text-xs text-gray-400" x-text="'#' + t.topic_id"></td>
           </tr>
         </template>
       </tbody>
@@ -572,6 +601,17 @@ function dashboard() {
       this.filtered = q
         ? this.topics.filter(t => t.name.toLowerCase().includes(q) || t.topic_id.includes(q))
         : [...this.topics];
+    },
+
+    formatLastActivity(timestamp) {
+      if (!timestamp) return 'Unknown';
+      const now = Date.now() / 1000;
+      const diff = now - timestamp;
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+      return new Date(timestamp * 1000).toLocaleDateString();
     },
 
     async openTopic(t) {
