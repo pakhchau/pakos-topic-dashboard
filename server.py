@@ -326,7 +326,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       </thead>
       <tbody class="divide-y divide-gray-100">
         <template x-for="t in filtered" :key="t.id">
-          <tr @click="openTopic(t)" class="hover:bg-gray-50 cursor-pointer">
+          <tr @click="openTopic(t)" class="hover:bg-gray-700 cursor-pointer">
             <td class="px-4 py-3 text-sm font-medium text-white" x-text="t.name"></td>
             <td class="px-4 py-3">
               <span :class="t.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
@@ -444,11 +444,11 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <div x-show="!detail?.issues?.length" class="text-sm text-gray-400 text-center py-8">No issues</div>
           <div class="space-y-2">
             <template x-for="(issue, i) in (detail?.issues || [])" :key="i">
-              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg group">
+              <div class="flex items-start gap-3 p-3 bg-gray-700 rounded-lg group hover:bg-gray-600 transition">
                 <input type="checkbox" :checked="issue.done" @change="toggleIssue(i)"
-                  class="mt-0.5 h-4 w-4 text-blue-600 rounded">
+                  class="mt-0.5 h-4 w-4 text-blue-500 rounded cursor-pointer">
                 <div class="flex-1">
-                  <p :class="issue.done ? 'line-through text-gray-500' : 'text-gray-100'" class="text-sm" x-text="issue.title"></p>
+                  <p :class="issue.done ? 'line-through text-gray-400' : 'text-white'" class="text-sm" x-text="issue.title"></p>
                   <p x-show="issue.notes" class="text-xs text-gray-400 mt-0.5" x-text="issue.notes"></p>
                 </div>
                 <button @click="removeIssue(i)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 text-xs">✕</button>
@@ -468,7 +468,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <div class="space-y-3">
             <template x-for="f in (detail?.memory || [])" :key="f.filename">
               <div class="border border-gray-700 rounded-lg overflow-hidden bg-gray-700">
-                <div class="flex items-center justify-between px-4 py-2 bg-gray-50">
+                <div class="flex items-center justify-between px-4 py-2 bg-gray-700">
                   <span class="text-sm font-medium text-gray-700" x-text="f.filename"></span>
                   <span class="text-xs text-gray-400" x-text="f.modified + ' · ' + f.size + ' B'"></span>
                 </div>
@@ -510,7 +510,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <div x-show="!detail?.files?.length" class="text-sm text-gray-400 text-center py-8">No files</div>
           <div class="space-y-1">
             <template x-for="f in (detail?.files || [])" :key="f.path">
-              <div class="flex items-center justify-between py-1.5 px-2 hover:bg-gray-50 rounded text-sm">
+              <div class="flex items-center justify-between py-1.5 px-2 hover:bg-gray-700 rounded text-sm">
                 <span class="text-gray-700 font-mono text-xs" x-text="f.path"></span>
                 <span class="text-xs text-gray-400 ml-4 shrink-0" x-text="f.modified"></span>
               </div>
@@ -524,7 +524,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <div x-show="!detail?.crons?.length" class="text-sm text-gray-400 text-center py-8">No crons configured</div>
           <div class="space-y-3">
             <template x-for="(c, i) in (detail?.crons || [])" :key="i">
-              <div class="bg-gray-50 rounded-lg p-3">
+              <div class="bg-gray-700 rounded-lg p-3">
                 <p class="text-sm font-medium text-white" x-text="c.label || c.id || 'Cron ' + i"></p>
                 <p class="text-xs text-gray-500 mt-0.5" x-text="c.schedule || c.cron || JSON.stringify(c)"></p>
               </div>
