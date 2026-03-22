@@ -33,19 +33,49 @@ def get_all_topics() -> list[dict]:
             capture_output=True, text=True, timeout=15
         )
         topics = []
-        for line in result.stdout.splitlines():
-            # Parse: "topic-24737  Topic: 🧠 PakOS Data Architecture  30m  active"
-            m = re.match(r'^(topic-\d+)\s+(.+?)\s{2,}(\S+)\s+(\S+)', line.strip())
-            if m:
-                tid, name, heartbeat, status = m.groups()
-                name = name.replace("Topic: ", "").strip()
-                topics.append({
-                    "id": tid,
-                    "name": name,
-                    "heartbeat": heartbeat,
-                    "status": status,
-                    "topic_id": tid.replace("topic-", ""),
-                })
+        lines = result.stdout.splitlines()
+        
+        # Skip header and separator lines
+        for line in lines[2:]:
+            if line.startswith('-'):  # Separator line
+                continue
+            if not line.strip():
+                continue
+            
+            # Fixed-width columns: ID (20), Name (30), Heartbeat (12), Status
+            parts = line.split()
+            if len(parts) >= 4 and parts[0].startswith('topic-'):
+                tid = parts[0]
+                # Join all middle parts except last one (status), strip "Topic: " prefix
+                status = parts[-1]
+                # Everything between tid and status is name + heartbeat
+                middle = ' '.join(parts[1:-1])
+                
+                # Find heartbeat (last non-name token before status)
+                # Heartbeats are typically: off, Xh, Xm, just now, etc.
+                # Split from the right to get heartbeat and name
+                m = re.match(r'^(.+?)\s+(off|just\s+now|\d+[hm]|active|dormant)$', middle)
+                if m:
+                    name = m.group(1).replace("Topic: ", "").strip()
+                    heartbeat = m.group(2)
+                else:
+                    # Fallback: heartbeat is last word
+                    name_parts = middle.rsplit(None, 1)
+                    if len(name_parts) == 2:
+                        name = name_parts[0].replace("Topic: ", "").strip()
+                        heartbeat = name_parts[1]
+                    else:
+                        name = middle.replace("Topic: ", "").strip()
+                        heartbeat = "unknown"
+                
+                if name:  # Only include if name is non-empty
+                    topics.append({
+                        "id": tid,
+                        "name": name,
+                        "heartbeat": heartbeat,
+                        "status": status,
+                        "topic_id": tid.replace("topic-", ""),
+                    })
         return topics
     except Exception as e:
         return []
