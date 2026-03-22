@@ -635,8 +635,13 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             </div>
           </div>
 
+          <!-- Workflow explanation -->
+          <div class="mb-4 p-3 bg-gray-700 rounded text-xs text-gray-300 border-l-4 border-blue-500">
+            <p><strong>💡 Workflow:</strong> Foreground = interactive with you. Background = async subagents/cron. Use issue notes to mark!</p>
+          </div>
+
           <!-- Quick filters -->
-          <div class="flex gap-2 mb-4 pb-4 border-b border-gray-700">
+          <div class="flex gap-2 mb-4 pb-4 border-b border-gray-700 flex-wrap">
             <button @click="issueFilter = 'open'" :class="issueFilter === 'open' ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
               class="text-xs px-3 py-1.5 rounded-full font-medium transition">
               <span x-text="'📌 Open (' + ((detail?.issues || []).filter(i => !i.done).length) + ')'"></span>
@@ -645,6 +650,10 @@ DASHBOARD_HTML = """<!DOCTYPE html>
               class="text-xs px-3 py-1.5 rounded-full font-medium transition">
               <span x-text="'✓ Done (' + ((detail?.issues || []).filter(i => i.done).length) + ')'"></span>
             </button>
+            <button @click="issueFilter = 'foreground'" :class="issueFilter === 'foreground' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+              class="text-xs px-3 py-1.5 rounded-full font-medium transition">👤 Foreground</button>
+            <button @click="issueFilter = 'background'" :class="issueFilter === 'background' ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+              class="text-xs px-3 py-1.5 rounded-full font-medium transition">⚙️ Background</button>
             <button @click="issueFilter = 'all'" :class="issueFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
               class="text-xs px-3 py-1.5 rounded-full font-medium transition">All</button>
           </div>
@@ -658,19 +667,30 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
           <!-- Tasks list -->
           <div class="space-y-2 flex-1 overflow-y-auto pr-2">
-            <template x-for="(issue, i) in (detail?.issues || []).filter(issue => issueFilter === 'all' || (issueFilter === 'done' ? issue.done : !issue.done))" :key="i">
-              <div :class="issue.done ? 'bg-gray-700 border-l-green-500' : 'bg-gray-800 border-l-yellow-500 hover:border-l-blue-400'"
-                class="border-l-4 p-4 rounded transition">
+            <template x-for="(issue, i) in (detail?.issues || []).filter(issue => {
+              if (issueFilter === 'all') return true;
+              if (issueFilter === 'done') return issue.done;
+              if (issueFilter === 'open') return !issue.done;
+              if (issueFilter === 'foreground') return !issue.done && !issue.notes?.toLowerCase().includes('[background]');
+              if (issueFilter === 'background') return !issue.done && issue.notes?.toLowerCase().includes('[background]');
+              return true;
+            })" :key="i">
+              <div :class="issue.done ? 'bg-gray-700 border-l-green-500' : (issue.notes?.toLowerCase().includes('[background]') ? 'bg-gray-800 border-l-indigo-500' : 'bg-gray-800 border-l-yellow-500 hover:border-l-blue-400')"
+                class="border-l-4 p-4 rounded transition relative">
                 
-                <!-- Checkbox + Title -->
+                <!-- Checkbox + Title + Badge -->
                 <div class="flex items-start gap-3 mb-2">
                   <input type="checkbox" :checked="issue.done" @change="toggleIssue(i)"
                     class="mt-1 h-5 w-5 text-blue-500 rounded cursor-pointer flex-shrink-0">
                   <div class="flex-1 min-w-0">
-                    <input type="text" :value="issue.title" @input="issue.title = $event.target.value"
-                      :class="issue.done ? 'line-through text-gray-500' : 'text-white'"
-                      class="w-full bg-transparent text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-1 rounded -mx-2 transition"
-                      placeholder="Task name...">
+                    <div class="flex items-center gap-2 mb-1">
+                      <input type="text" :value="issue.title" @input="issue.title = $event.target.value"
+                        :class="issue.done ? 'line-through text-gray-500' : 'text-white'"
+                        class="flex-1 bg-transparent text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-1 rounded -mx-2 transition"
+                        placeholder="Task name...">
+                      <span x-show="!issue.done && issue.notes?.toLowerCase().includes('[background]')" class="text-xs px-2 py-0.5 bg-indigo-900 text-indigo-200 rounded-full flex-shrink-0">⚙️ Async</span>
+                      <span x-show="!issue.done && !issue.notes?.toLowerCase().includes('[background]')" class="text-xs px-2 py-0.5 bg-purple-900 text-purple-200 rounded-full flex-shrink-0">👤 Now</span>
+                    </div>
                   </div>
                   <button @click="removeIssue(i)" 
                     class="text-gray-600 hover:text-red-400 text-xs flex-shrink-0 transition">✕</button>
@@ -681,7 +701,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                   <textarea :value="issue.notes" @input="issue.notes = $event.target.value"
                     class="w-full text-xs p-2 bg-gray-700 text-gray-200 rounded border border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none transition"
                     rows="2"
-                    placeholder="Add notes or context..."></textarea>
+                    placeholder="Notes. Add '[background]' to mark as async work..."></textarea>
+                  <p class="text-xs text-gray-500 mt-1">💡 Tip: Add <code class="bg-gray-700 px-1 rounded">[background]</code> to mark as async work</p>
                 </div>
               </div>
             </template>
