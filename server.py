@@ -65,7 +65,8 @@ def read_issues(topic_dir: Path) -> list[dict]:
     issues = []
     current = None
     for line in issues_file.read_text().splitlines():
-        m = re.match(r'^[-*]\s+\[([ xX])\]\s+(.+)', line)
+        # Match both "- [ ]" and "[ ]" formats
+        m = re.match(r'^[-*]?\s*\[([ xX])\]\s+(.+)', line)
         if m:
             done = m.group(1).lower() == 'x'
             title = m.group(2).strip()
