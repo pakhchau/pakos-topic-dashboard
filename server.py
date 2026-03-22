@@ -593,29 +593,91 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Tab: Issues -->
+        <!-- Tab: Issues / Goals -->
         <div x-show="activeTab === 'issues'" class="p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="font-semibold text-white">Issues</h3>
-            <button @click="addIssue()" class="text-sm px-3 py-1 bg-blue-600 text-white rounded-lg">+ Add</button>
+          <!-- Header with stats -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-bold text-white">Issues & Goals</h2>
+              <button @click="addIssue()" class="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">+ New Issue</button>
+            </div>
+            
+            <!-- Progress summary -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="bg-gray-700 rounded-lg p-3">
+                <p class="text-2xl font-bold text-white" x-text="detail?.issues?.length || 0"></p>
+                <p class="text-xs text-gray-500 mt-1">Total Issues</p>
+              </div>
+              <div class="bg-gray-700 rounded-lg p-3">
+                <p class="text-2xl font-bold text-green-400" x-text="(detail?.issues || []).filter(i => i.done).length"></p>
+                <p class="text-xs text-gray-500 mt-1">Completed</p>
+              </div>
+              <div class="bg-gray-700 rounded-lg p-3">
+                <p class="text-2xl font-bold text-yellow-400" x-text="(detail?.issues || []).filter(i => !i.done).length"></p>
+                <p class="text-xs text-gray-500 mt-1">Open</p>
+              </div>
+            </div>
           </div>
-          <div x-show="!detail?.issues?.length" class="text-sm text-gray-400 text-center py-8">No issues</div>
-          <div class="space-y-2">
-            <template x-for="(issue, i) in (detail?.issues || [])" :key="i">
-              <div class="flex items-start gap-3 p-3 bg-gray-700 rounded-lg group hover:bg-gray-600 transition">
-                <input type="checkbox" :checked="issue.done" @change="toggleIssue(i)"
-                  class="mt-0.5 h-4 w-4 text-blue-500 rounded cursor-pointer">
-                <div class="flex-1">
-                  <p :class="issue.done ? 'line-through text-gray-400' : 'text-white'" class="text-sm" x-text="issue.title"></p>
-                  <p x-show="issue.notes" class="text-xs text-gray-400 mt-0.5" x-text="issue.notes"></p>
+
+          <!-- Filters -->
+          <div class="flex gap-2 mb-4 pb-4 border-b border-gray-700">
+            <button @click="issueFilter = 'all'" :class="issueFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+              class="text-xs px-3 py-1.5 rounded-full transition">All</button>
+            <button @click="issueFilter = 'open'" :class="issueFilter === 'open' ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+              class="text-xs px-3 py-1.5 rounded-full transition">Open</button>
+            <button @click="issueFilter = 'done'" :class="issueFilter === 'done' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+              class="text-xs px-3 py-1.5 rounded-full transition">Done</button>
+          </div>
+
+          <!-- Empty state -->
+          <div x-show="!detail?.issues?.length" class="text-center py-12">
+            <p class="text-5xl mb-3">📋</p>
+            <p class="text-gray-400 text-sm">No issues yet. Create one to get started!</p>
+          </div>
+
+          <!-- Issues list -->
+          <div class="space-y-3">
+            <template x-for="(issue, i) in (detail?.issues || []).filter(issue => issueFilter === 'all' || (issueFilter === 'done' ? issue.done : !issue.done))" :key="i">
+              <div :class="issue.done ? 'bg-gray-700 border-gray-700' : 'bg-gray-750 border-gray-650 hover:border-blue-600'"
+                class="border-l-4 transition" :style="'border-left-color: ' + (issue.done ? '#10b981' : '#3b82f6')">
+                
+                <div class="p-4 hover:bg-gray-700 transition">
+                  <!-- Checkbox + Title -->
+                  <div class="flex items-start gap-3 mb-2">
+                    <input type="checkbox" :checked="issue.done" @change="toggleIssue(detail?.issues?.indexOf(issue))"
+                      class="mt-1 h-5 w-5 text-blue-500 rounded cursor-pointer">
+                    <div class="flex-1">
+                      <p :class="issue.done ? 'line-through text-gray-500' : 'text-white font-medium'"
+                        class="text-sm" x-text="issue.title"></p>
+                    </div>
+                    <button @click="removeIssue(detail?.issues?.indexOf(issue))" 
+                      class="text-gray-500 hover:text-red-400 text-sm transition">✕</button>
+                  </div>
+                  
+                  <!-- Notes/Description -->
+                  <textarea v-if="false" x-show="issue.notes || editingIssue === i" @blur="editingIssue = null"
+                    :value="issue.notes"
+                    @input="issue.notes = $event.target.value"
+                    class="w-full text-xs p-2 bg-gray-600 text-gray-200 rounded border border-gray-500 focus:border-blue-500 focus:outline-none"
+                    placeholder="Add notes or description..."></textarea>
+                  <p x-show="issue.notes && editingIssue !== i" 
+                    @click="editingIssue = i"
+                    class="text-xs text-gray-400 mt-2 p-2 rounded cursor-pointer hover:bg-gray-700 transition"
+                    x-text="issue.notes"></p>
+                  <p x-show="!issue.notes && editingIssue !== i"
+                    @click="editingIssue = i"
+                    class="text-xs text-gray-600 italic mt-2 p-2 rounded cursor-pointer hover:bg-gray-700 transition">
+                    + Click to add description
+                  </p>
                 </div>
-                <button @click="removeIssue(i)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 text-xs">✕</button>
               </div>
             </template>
           </div>
+
+          <!-- Save button -->
           <button x-show="detail?.issues?.length" @click="saveIssues()"
-            class="mt-4 w-full py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
-            Save changes
+            class="mt-6 w-full py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition">
+            💾 Save Changes
           </button>
         </div>
 
@@ -701,6 +763,7 @@ function dashboard() {
     topics: [], filtered: [], loading: true,
     view: 'card', search: '', selected: null, detail: null,
     activeTab: 'overview', detailLoading: false,
+    issueFilter: 'all', editingIssue: null,
 
     async init() {
       await this.refresh();
@@ -768,13 +831,15 @@ function dashboard() {
     },
 
     toggleIssue(i) {
-      if (this.detail?.issues?.[i]) {
+      if (this.detail?.issues?.[i] !== undefined) {
         this.detail.issues[i].done = !this.detail.issues[i].done;
       }
     },
 
     removeIssue(i) {
-      this.detail.issues.splice(i, 1);
+      if (i >= 0 && i < this.detail.issues.length) {
+        this.detail.issues.splice(i, 1);
+      }
     },
 
     addIssue() {
