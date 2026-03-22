@@ -277,12 +277,12 @@ def serve_ui():
 @app.get("/changelog")
 def serve_changelog():
     try:
-        changelog_file = BASE / "changelog.html"
+        changelog_file = Path(__file__).parent / "changelog.html"
         if changelog_file.exists():
             return HTMLResponse(changelog_file.read_text())
         return HTMLResponse("<h1>Changelog not found</h1>")
-    except:
-        return HTMLResponse("<h1>Error loading changelog</h1>")
+    except Exception as e:
+        return HTMLResponse(f"<h1>Error loading changelog: {e}</h1>")
 
 # ─── Frontend HTML ─────────────────────────────────────────────────────────────
 
