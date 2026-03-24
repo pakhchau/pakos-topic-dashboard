@@ -827,13 +827,13 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         </div>
 
         <!-- Tab: Chat (DamiChat Embedded) -->
-        <div x-show="activeTab === 'chat'" class="p-0 flex flex-col h-full overflow-hidden bg-black">
-          <!-- DamiChat Iframe -->
+        <div x-show="activeTab === 'chat'" class="p-0 flex flex-col h-full overflow-hidden">
           <iframe 
-            :src="'https://chat.pakhchau.com?topic=' + selected?.topic_id"
+            src="https://chat.pakhchau.com"
             class="flex-1 w-full h-full border-0"
             title="DamiChat - Topic Discussion"
-            allow="clipboard-read; clipboard-write">
+            allow="clipboard-read; clipboard-write"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation">
           </iframe>
         </div>
 
