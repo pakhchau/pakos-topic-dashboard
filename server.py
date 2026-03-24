@@ -317,7 +317,7 @@ def serve_ui():
 @app.get("/changelog")
 def serve_changelog():
     try:
-        changelog_file = Path(__file__).parent / "changelog.html"
+        changelog_file = Path(__file__).parent / "changelog_modal.html"
         if changelog_file.exists():
             return HTMLResponse(changelog_file.read_text())
         return HTMLResponse("<h1>Changelog not found</h1>")
@@ -429,6 +429,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <button @click="refresh()" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
         ↻ Refresh
       </button>
+      <a href="/changelog" class="px-3 py-1.5 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600">
+        📝 Changelog
+      </a>
       <a href="/git-tree" class="px-3 py-1.5 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600">
         🌳 Git Tree
       </a>

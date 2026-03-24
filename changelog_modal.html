@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog — Topic Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0a0a0f; color: #e8e8f0; }
+        .version-card { transition: all 0.2s; }
+        .version-card:hover { transform: translateX(4px); }
+        .feat { color: #10b981; }
+        .fix { color: #f59e0b; }
+        .docs { color: #3b82f6; }
+        .changelog-container { max-height: 80vh; overflow-y: auto; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Modal -->
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-8 shadow-2xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Changelog</h1>
+                    <p class="text-gray-400 text-sm mt-1">PakOS Topic Dashboard</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-bold text-blue-500">v1.1.0</div>
+                    <p class="text-gray-400 text-sm">Current</p>
+                </div>
+            </div>
+
+            <!-- Changelog Content -->
+            <div class="changelog-container space-y-8">
+                <!-- v1.1.0 -->
+                <div class="version-card bg-gray-750 border border-gray-700 rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white">v1.1.0</h2>
+                        <span class="text-xs text-gray-400">2026-03-22</span>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Card, List, Kanban views for topics</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Detail panel with 7 tabs (Overview, Issues, Chat, Memory, Skills, Files, Crons)</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Issue management with foreground/background task filtering</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Inline issue editing with auto-save to ISSUES.md</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Chat transcript viewer with markdown formatting</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Memory viewer and file browser</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Nudge Agent button for bootstrapping new agents</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="fix font-semibold">fix:</span>
+                            <span class="text-gray-300">Issue parser supports both [ ] and - [ ] formats</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- v1.0.0 -->
+                <div class="version-card bg-gray-750 border border-gray-700 rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white">v1.0.0</h2>
+                        <span class="text-xs text-gray-400">2026-03-21</span>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">FastAPI backend with SQLite data layer</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Topic API endpoints (/api/topics, /api/topics/{id})</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Dark theme UI with responsive design</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="feat font-semibold">feat:</span>
+                            <span class="text-gray-300">Systemd service deployment</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="docs font-semibold">docs:</span>
+                            <span class="text-gray-300">Comprehensive documentation and testing</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GitHub Link -->
+                <div class="bg-gray-750 border border-gray-700 rounded-lg p-4 text-center">
+                    <p class="text-gray-400 text-sm mb-3">View full history and contribute</p>
+                    <a href="https://github.com/pakhchau/pakos-topic-dashboard" target="_blank" 
+                       class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                        🌳 GitHub Repository
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-8 pt-6 border-t border-gray-700 flex justify-between items-center">
+                <div class="text-sm text-gray-500">
+                    35+ commits • Latest: <code class="bg-gray-700 px-2 py-1 rounded text-xs">56fa312</code>
+                </div>
+                <a href="/" class="text-blue-400 hover:text-blue-300 transition-colors">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
