@@ -333,7 +333,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PakOS Topic Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js" defer></script>
 <style>
   [x-cloak] { display: none !important; }
   .scrollbar-thin::-webkit-scrollbar { width: 4px; }
@@ -350,7 +350,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
 </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen" x-data="dashboard()" x-init="init()">
+<body class="bg-gray-900 text-gray-100 min-h-screen" x-data="dashboard()" x-init="init(); console.log('Dashboard initialized with ' + topics.length + ' topics')">
 
 <!-- Header -->
 <div class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
@@ -865,9 +865,15 @@ function dashboard() {
     async refresh() {
       this.loading = true;
       try {
+        console.log('🔄 Refreshing topics...');
         const r = await fetch('/api/topics');
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
         this.topics = await r.json();
+        console.log('✅ Loaded ' + this.topics.length + ' topics');
         this.applyFilter();
+      } catch (e) {
+        console.error('❌ Refresh error:', e);
+        this.topics = [];
       } finally {
         this.loading = false;
       }
