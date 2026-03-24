@@ -324,6 +324,62 @@ def serve_changelog():
     except Exception as e:
         return HTMLResponse(f"<h1>Error loading changelog: {e}</h1>")
 
+@app.get("/git-tree")
+def serve_git_tree():
+    """Git commit tree visualization page"""
+    try:
+        result = subprocess.run(
+            ["git", "log", "--graph", "--oneline", "--all", "--decorate"],
+            cwd="/root/clawd/apps/topic-dashboard",
+            capture_output=True, text=True, timeout=10
+        )
+        git_log = result.stdout or "No commits found"
+    except:
+        git_log = "Error loading git log"
+    
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Tree — Topic Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {{ background: #0a0a0f; color: #e8e8f0; }}
+        .git-log {{ font-family: 'Monaco', 'Courier New', monospace; }}
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="max-w-6xl mx-auto px-6 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">🌳 Git Tree — Topic Dashboard</h1>
+            <p class="text-gray-400">Commit history and development timeline</p>
+        </div>
+        
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 overflow-x-auto">
+            <div class="git-log text-sm text-gray-300 whitespace-pre font-mono leading-relaxed">
+{git_log}
+            </div>
+        </div>
+        
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-400">
+            <div class="bg-gray-800 border border-gray-700 rounded p-4">
+                <h3 class="text-white font-semibold mb-2">📊 Repository</h3>
+                <p><a href="https://github.com/pakhchau/pakos-topic-dashboard" target="_blank" class="text-blue-400 hover:underline">github.com/pakhchau/pakos-topic-dashboard</a></p>
+            </div>
+            <div class="bg-gray-800 border border-gray-700 rounded p-4">
+                <h3 class="text-white font-semibold mb-2">📁 Local Path</h3>
+                <p>/root/clawd/apps/topic-dashboard</p>
+            </div>
+        </div>
+        
+        <div class="mt-6 text-center">
+            <a href="/" class="text-blue-400 hover:underline">← Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>""")
+
 # ─── Frontend HTML ─────────────────────────────────────────────────────────────
 
 DASHBOARD_HTML = """<!DOCTYPE html>
@@ -373,6 +429,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <button @click="refresh()" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
         ↻ Refresh
       </button>
+      <a href="/git-tree" class="px-3 py-1.5 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600">
+        🌳 Git Tree
+      </a>
     </div>
   </div>
 </div>
