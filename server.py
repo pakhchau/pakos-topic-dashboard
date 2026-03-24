@@ -310,6 +310,35 @@ def update_issues(topic_id: str, payload: dict):
     (d / "ISSUES.md").write_text("\n".join(lines))
     return {"ok": True}
 
+@app.post("/api/topics/{topic_id}/message")
+def send_message_to_agent(topic_id: str, payload: dict):
+    """Send a message to a topic agent via sessions_send"""
+    message = payload.get("message", "").strip()
+    agent_id = payload.get("agentId", f"topic-{topic_id}")
+    
+    if not message:
+        raise HTTPException(400, "Message required")
+    
+    try:
+        # Use subprocess to call sessions_send
+        result = subprocess.run(
+            ["openclaw", "sessions", "send", agent_id, message],
+            capture_output=True, text=True, timeout=10
+        )
+        
+        return {
+            "ok": result.returncode == 0,
+            "agent_id": agent_id,
+            "message": message,
+            "output": result.stdout if result.returncode == 0 else result.stderr
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e),
+            "agent_id": agent_id
+        }
+
 @app.get("/")
 def serve_ui():
     return HTMLResponse(DASHBOARD_HTML)
@@ -826,15 +855,59 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Tab: Chat (DamiChat Embedded) -->
-        <div x-show="activeTab === 'chat'" class="p-0 flex flex-col h-full overflow-hidden">
-          <iframe 
-            src="https://chat.pakhchau.com"
-            class="flex-1 w-full h-full border-0"
-            title="DamiChat - Topic Discussion"
-            allow="clipboard-read; clipboard-write"
-            sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation">
-          </iframe>
+        <!-- Tab: Chat (Topic Agent Messaging) -->
+        <div x-show="activeTab === 'chat'" class="p-4 flex flex-col h-full overflow-hidden">
+          <!-- Messages area -->
+          <div class="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
+            <!-- Empty state -->
+            <div x-show="!chatMessages?.length" class="text-center py-12 flex flex-col items-center justify-center h-full">
+              <p class="text-5xl mb-3">💬</p>
+              <p class="text-gray-400 text-sm">Message the topic agent</p>
+              <p class="text-gray-500 text-xs mt-2">Type below to start a conversation</p>
+            </div>
+
+            <!-- Messages -->
+            <template x-for="(msg, i) in chatMessages" :key="i">
+              <div :class="msg.sender === 'user' ? 'ml-auto max-w-sm' : 'mr-auto max-w-sm'">
+                <div :class="msg.sender === 'user' ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm' : 'bg-gray-700 text-gray-100 rounded-2xl rounded-tl-sm'"
+                  class="px-4 py-3 text-sm leading-relaxed">
+                  <p class="text-xs font-semibold mb-1 opacity-60" x-text="msg.sender === 'user' ? '👤 You' : '🤖 Agent'"></p>
+                  <p class="whitespace-pre-wrap break-words" x-text="msg.text"></p>
+                  <p class="text-xs opacity-50 mt-2" x-text="new Date(msg.time).toLocaleTimeString()"></p>
+                </div>
+              </div>
+            </template>
+
+            <!-- Sending indicator -->
+            <div x-show="chatSending" class="flex">
+              <div class="bg-gray-700 text-gray-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-sm">
+                <p class="text-xs font-semibold mb-2 opacity-60">🤖 Agent</p>
+                <div class="flex gap-1">
+                  <div class="h-2 w-2 bg-gray-500 rounded-full animate-pulse"></div>
+                  <div class="h-2 w-2 bg-gray-500 rounded-full animate-pulse" style="animation-delay: 0.1s"></div>
+                  <div class="h-2 w-2 bg-gray-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input area -->
+          <div class="border-t border-gray-700 pt-4">
+            <div class="flex gap-2">
+              <textarea x-model="chatInput"
+                @keydown.enter.shift="sendToAgent()"
+                class="flex-1 p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none text-sm"
+                rows="2"
+                placeholder="Message the agent... (Shift+Enter to send)"
+                :disabled="chatSending"></textarea>
+              <button @click="sendToAgent()" :disabled="!chatInput.trim() || chatSending"
+                :class="!chatInput.trim() || chatSending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'"
+                class="px-4 py-3 bg-blue-600 text-white rounded-lg font-medium transition flex-shrink-0">
+                Send
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Messages are sent to the topic agent.</p>
+          </div>
         </div>
 
         <!-- Tab: Skills -->
@@ -888,6 +961,7 @@ function dashboard() {
     view: 'card', search: '', selected: null, detail: null,
     activeTab: 'overview', detailLoading: false,
     issueFilter: 'all', editingIssue: null,
+    chatInput: '', chatSending: false, chatMessages: [],
 
     async init() {
       await this.refresh();
@@ -981,6 +1055,43 @@ function dashboard() {
         body: JSON.stringify({ issues: this.detail.issues })
       });
       alert('Saved ✓');
+    },
+
+    async sendToAgent() {
+      if (!this.chatInput.trim() || this.chatSending) return;
+      
+      const message = this.chatInput;
+      this.chatInput = '';
+      this.chatSending = true;
+      
+      try {
+        // Add user message to chat
+        if (!this.chatMessages) this.chatMessages = [];
+        this.chatMessages.push({
+          sender: 'user',
+          text: message,
+          time: Date.now()
+        });
+        
+        // Send to agent via sessions_send
+        const agentId = 'topic-' + this.selected.topic_id;
+        const response = await fetch('/api/topics/' + this.selected.id + '/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, agentId })
+        });
+        
+        const result = await response.json();
+        
+        // Add agent confirmation
+        this.chatMessages.push({
+          sender: 'agent',
+          text: result.ok ? '✓ Message sent to agent' : ('❌ Error: ' + (result.error || 'Unknown error')),
+          time: Date.now()
+        });
+      } finally {
+        this.chatSending = false;
+      }
     },
 
 
