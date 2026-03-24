@@ -826,15 +826,35 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Tab: Chat (DamiChat Embedded) -->
-        <div x-show="activeTab === 'chat'" class="p-0 flex flex-col h-full overflow-hidden">
-          <iframe 
-            :key="selected?.id"
-            :src="'https://chat.pakhchau.com?sessionKey=topic-' + selected?.topic_id"
-            class="flex-1 w-full h-full border-0 bg-black"
-            title="DamiChat - Topic Discussion"
-            allow="clipboard-read; clipboard-write">
-          </iframe>
+        <!-- Tab: Chat (DamiChat Link) -->
+        <div x-show="activeTab === 'chat'" class="p-6 flex flex-col h-full overflow-hidden">
+          <div class="flex-1 flex flex-col items-center justify-center text-center">
+            <div class="mb-8">
+              <div class="text-6xl mb-4 teal-500">💬</div>
+              <h2 class="text-2xl font-bold text-white mb-2">DamiChat</h2>
+              <p class="text-gray-400 mb-6">Full chat interface for this topic</p>
+            </div>
+            
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-8 max-w-md">
+              <p class="text-gray-300 mb-6 text-sm leading-relaxed">
+                Open DamiChat in a new tab to chat with the agent about this topic. All messages will be routed to <code class="bg-gray-700 px-2 py-1 rounded text-xs font-mono" x-text="'topic-' + selected?.topic_id"></code>.
+              </p>
+              
+              <a :href="'https://chat.pakhchau.com?sessionKey=topic-' + selected?.topic_id" 
+                target="_blank" rel="noopener noreferrer"
+                class="inline-block px-8 py-4 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors mb-4 w-full text-center">
+                Open DamiChat →
+              </a>
+              
+              <p class="text-xs text-gray-500">
+                💡 <strong>Tip:</strong> Keep both windows open side-by-side for best experience
+              </p>
+            </div>
+            
+            <div class="mt-8 text-xs text-gray-600 max-w-md">
+              <p>🔗 Your session link: <code class="bg-gray-800 px-2 py-1 rounded text-xs font-mono block mt-2 break-all" x-text="'chat.pakhchau.com?sessionKey=topic-' + selected?.topic_id"></code></p>
+            </div>
+          </div>
         </div>
 
         <!-- Tab: Skills -->
