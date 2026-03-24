@@ -826,49 +826,84 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Tab: Chat (Interactive + Streaming) -->
-        <div x-show="activeTab === 'chat'" class="p-6 flex flex-col h-full">
-          <!-- Chat history -->
-          <div class="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+        <!-- Tab: Activity (Status + Updates) -->
+        <div x-show="activeTab === 'chat'" class="p-4 flex flex-col h-full overflow-hidden">
+          <div class="flex-1 overflow-y-auto space-y-3 pr-2">
             <!-- Empty state -->
-            <div x-show="!detail?.transcript?.length" class="text-center py-12 flex flex-col items-center justify-center">
-              <p class="text-5xl mb-3">💬</p>
-              <p class="text-gray-400 text-sm">No messages yet</p>
-              <p class="text-gray-500 text-xs mt-2">Topic conversation will appear here</p>
+            <div x-show="!detail || (!detail?.memory && !detail?.issues?.length)" class="text-center py-12 flex flex-col items-center justify-center h-full">
+              <p class="text-5xl mb-3">📊</p>
+              <p class="text-gray-400 text-sm">No activity yet</p>
             </div>
 
-            <!-- Messages - DamiChat style -->
-            <template x-for="(msg, i) in (detail?.transcript || [])" :key="i">
-              <div :class="msg.role === 'user' ? 'ml-auto max-w-xs' : 'mr-auto max-w-sm'">
-                <!-- Sender label -->
-                <div :class="msg.role === 'user' ? 'text-right' : 'text-left'" class="text-xs text-gray-500 mb-1 px-2">
-                  <span x-text="msg.role === 'user' ? '👤 You' : '🤖 AGENT'" class="font-semibold"></span>
+            <!-- Status Card -->
+            <div class="bg-gray-750 border border-gray-700 rounded-lg p-4">
+              <h4 class="text-white font-semibold mb-3 text-sm">📍 Status</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Heartbeat:</span>
+                  <span class="text-white font-mono" x-text="detail?.heartbeat || 'N/A'"></span>
                 </div>
-                <!-- Message bubble -->
-                <div :class="msg.role === 'user' ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm' : 'bg-gray-700 text-gray-100 rounded-2xl rounded-tl-sm'"
-                  class="px-4 py-3 text-sm leading-relaxed">
-                  <p class="whitespace-pre-wrap break-words" x-text="msg.text"></p>
-                  <p class="text-xs opacity-50 mt-1" x-text="msg.timestamp ? new Date(msg.timestamp).toLocaleString() : ''"></p>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Status:</span>
+                  <span :class="detail?.status === 'active' ? 'text-green-400' : 'text-yellow-400'" class="font-semibold" x-text="detail?.status || 'unknown'"></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Last Updated:</span>
+                  <span class="text-white font-mono text-xs" x-text="detail?.updated_time ? new Date(detail.updated_time * 1000).toLocaleDateString() : 'N/A'"></span>
                 </div>
               </div>
-            </template>
+            </div>
 
-            <!-- Streaming indicator -->
-            <div x-show="chatStreaming" class="flex justify-start">
-              <div class="bg-gray-700 text-gray-100 rounded-r-lg rounded-tl-lg px-4 py-3">
-                <p class="text-xs font-semibold uppercase mb-2 opacity-60">🤖 Agent (streaming...)</p>
-                <div class="space-y-1">
-                  <div class="h-2 bg-gray-600 rounded animate-pulse w-48"></div>
-                  <div class="h-2 bg-gray-600 rounded animate-pulse w-40"></div>
-                  <div class="h-2 bg-gray-600 rounded animate-pulse w-44"></div>
+            <!-- Tasks Summary -->
+            <div x-show="detail?.issues?.length" class="bg-gray-750 border border-gray-700 rounded-lg p-4">
+              <h4 class="text-white font-semibold mb-3 text-sm">✅ Tasks</h4>
+              <div class="space-y-1">
+                <div class="flex justify-between text-sm mb-3">
+                  <span class="text-gray-400">Progress:</span>
+                  <span class="text-white font-semibold" x-text="(detail?.issue_done || 0) + '/' + (detail?.issues?.length || 0)"></span>
+                </div>
+                <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div class="h-full bg-blue-500 transition-all" :style="'width: ' + Math.round(((detail?.issue_done || 0) / (detail?.issues?.length || 1)) * 100) + '%'"></div>
+                </div>
+              </div>
+              <div class="mt-3 space-y-1 max-h-32 overflow-y-auto">
+                <template x-for="(issue, i) in (detail?.issues || []).slice(0, 5)" :key="i">
+                  <div class="text-xs p-2 bg-gray-800 rounded flex items-start gap-2">
+                    <span class="text-gray-500" x-text="issue.done ? '✓' : '○'"></span>
+                    <span :class="issue.done ? 'line-through text-gray-500' : 'text-gray-300'" x-text="issue.title"></span>
+                  </div>
+                </template>
+                <div x-show="(detail?.issues?.length || 0) > 5" class="text-xs text-gray-500 text-center py-1">
+                  <span x-text="'+ ' + ((detail?.issues?.length || 0) - 5) + ' more'"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Memory Highlight -->
+            <div x-show="detail?.memory" class="bg-gray-750 border border-gray-700 rounded-lg p-4">
+              <h4 class="text-white font-semibold mb-3 text-sm">📝 Memory</h4>
+              <div class="text-xs text-gray-300 leading-relaxed max-h-24 overflow-hidden">
+                <p x-text="(detail?.memory || '').substring(0, 300) + (detail?.memory?.length > 300 ? '...' : '')"></p>
+              </div>
+            </div>
+
+            <!-- Files Activity -->
+            <div x-show="detail?.files?.length" class="bg-gray-750 border border-gray-700 rounded-lg p-4">
+              <h4 class="text-white font-semibold mb-3 text-sm">📁 Files</h4>
+              <div class="space-y-1 max-h-24 overflow-y-auto">
+                <template x-for="(file, i) in (detail?.files || []).slice(0, 5)" :key="i">
+                  <div class="text-xs text-gray-400 truncate">📄 <span x-text="file.name || file"></span></div>
+                </template>
+                <div x-show="(detail?.files?.length || 0) > 5" class="text-xs text-gray-500 text-center py-1">
+                  <span x-text="'+ ' + ((detail?.files?.length || 0) - 5) + ' more'"></span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Footer -->
-          <div class="border-t border-gray-700 pt-4 text-center">
-            <p class="text-xs text-gray-500">💡 View transcript here • Reply in Telegram</p>
+          <div class="border-t border-gray-700 pt-3 text-center">
+            <p class="text-xs text-gray-500">💡 Activity summary • Full chat in Telegram</p>
           </div>
         </div>
 
